@@ -4,13 +4,15 @@
 #include "WindowModule.h"
 #include "GameObject.h"
 #include "GravityComponent.h"
+#include "Player.h"
+#include "InputHandler.h"
 #include <iostream>
 
 class TestComponent : public Component {
 public:
     void Render(sf::RenderWindow* window) override {
         // On dessine un énorme carré rouge pour être SUR de le voir
-        sf::RectangleShape rect(sf::Vector2f(200, 200));
+        sf::RectangleShape rect(sf::Vector2f(10, 10));
         rect.setFillColor(sf::Color::Red);
         if (owner) {
             rect.setPosition(owner->GetTransform().pos);
@@ -24,8 +26,17 @@ public:
     void Create() override {
         std::cout << "Scene de test creee !" << std::endl;
         GameObject* obj = CreateGameObject({ 0,0 }, "Tester");
-        obj->AddComponent<TestComponent>();
+        // 1. Détecte les touches (Engine)
+        obj->AddComponent<InputHandler>();
+
+        // 2. Gère la chute (Engine)
         obj->AddComponent<GravityComponent>();
+
+        // 3. Pilote le tout (Game)
+        obj->AddComponent<Player>();
+
+        // 4. Le visuel (Game)
+        obj->AddComponent<TestComponent>();
     }
 };
 
