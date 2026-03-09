@@ -33,6 +33,8 @@ public:
 	// Récupère la scène du game object
 	Scene* GetScene();
 
+
+
 private:
 	std::vector<Component*> components;
 	Transform transform;
