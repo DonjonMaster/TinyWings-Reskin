@@ -8,13 +8,7 @@
 
 #include "BaseScene.h"
 
-#include "Engine.h"
-#include "ModuleManager.h"
-#include "SceneModule.h"
-#include "WindowModule.h"
-#include "GameObject.h"
-#include "GravityComponent.h"
-#include "Player.h"
+//#include "Player.h"
 #include "InputHandler.h"
 #include <iostream>
 
@@ -31,13 +25,13 @@ public:
     }
 };
 
-class TestScene : public Scene {
+class TestScene : public BaseScene {
 public:
 
     void Create() override
     {
         // ici je peux créer le joueur grace au create player init dans le base scene (on peut toujours mettre les autres elements egalement)
-        auto player = CreatePlayer();
+        GameObject* player = CreatePlayer();
         player->AddComponent<TestComponent>();
 
         SpriteRendererComponent* playerSprite = player->GetComponent<SpriteRendererComponent>();

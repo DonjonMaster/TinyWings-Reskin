@@ -1,6 +1,6 @@
 #include "BaseScene.h"
 #include "InputHandler.h" // Ajoute ces includes
-#include "Player.h"       
+/*#include "Player.h"  */     
 
 GameObject* BaseScene::CreatePlayer()
 {
@@ -13,7 +13,8 @@ GameObject* BaseScene::CreatePlayer()
 	// Ajout des composants physiques et logique
 	player->AddComponent<GravityComponent>();
 	player->AddComponent<InputHandler>(); // Detecte les touches
-	player->AddComponent<Player>();       // Pilote la gravite progressive
+	player->AddComponent<SpriteRendererComponent>("Assets/justeUnTest.png");
+	//player->AddComponent<Player>();       // Pilote la gravite progressive
 
 	return player;
 }
