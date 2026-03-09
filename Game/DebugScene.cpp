@@ -4,8 +4,10 @@
 #include "WindowModule.h"
 #include "GameObject.h"
 #include "GravityComponent.h"
+#include "BaseScene.h"
 #include <iostream>
 
+// ici j'init un component
 class TestComponent : public Component {
 public:
     void Render(sf::RenderWindow* window) override {
@@ -19,13 +21,15 @@ public:
     }
 };
 
-class TestScene : public Scene {
+// ici j'applique le component que j'ai init a un gameobject PLAYER
+class TestScene : public BaseScene {
 public:
-    void Create() override {
-        std::cout << "Scene de test creee !" << std::endl;
-        GameObject* obj = CreateGameObject({ 0,0 }, "Tester");
-        obj->AddComponent<TestComponent>();
-        obj->AddComponent<GravityComponent>();
+
+    void Create() override
+    {
+        // ici je peux créer le joueur grace au create player init dans le base scene (on peut toujours mettre les autres elements egalement)
+        auto player = CreatePlayer();
+        player->AddComponent<TestComponent>();
     }
 };
 
@@ -33,6 +37,7 @@ int main() {
     Engine* engine = Engine::GetInstance();
     engine->Initialize();
 
+    // ici je met en place la scene avec tout ce que j'ai besoin d'afficher
     SceneModule* sm = engine->GetModuleManager()->GetModule<SceneModule>();
     if (sm) {
         sm->RegisterScene<TestScene>("Test");
