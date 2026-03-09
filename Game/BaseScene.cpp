@@ -1,12 +1,19 @@
 #include "BaseScene.h"
+#include "InputHandler.h" // Ajoute ces includes
+#include "Player.h"       
 
 GameObject* BaseScene::CreatePlayer()
 {
-	// on commence par enregistrer le joueur dans la scene du gameobject
+	// On commence par enregistrer le joueur dans la scene
 	GameObject* player = CreateGameObject({ 640, -120 }, "Player");
-	// puis vient les inits
+
+	// Configuration du transform
 	player->GetTransform().origin = { 0.5f, 1.f };
+
+	// Ajout des composants physiques et logique
 	player->AddComponent<GravityComponent>();
-	player->AddComponent<SpriteRendererComponent>("Assets/justeUnTest.png");
+	player->AddComponent<InputHandler>(); // Detecte les touches
+	player->AddComponent<Player>();       // Pilote la gravite progressive
+
 	return player;
 }

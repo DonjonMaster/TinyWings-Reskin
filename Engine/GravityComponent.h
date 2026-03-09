@@ -4,13 +4,11 @@
 #include "GameObject.h"
 #include "Transform.h"
 
-class GravityComponent : public Component
-{
-private:
-	sf::Vector2f gravity = { 0.f, 981.f };
-
+class GravityComponent : public Component {
 public:
+    void Update(float dt) override;
+    void SetGravity(sf::Vector2f newGravity) { gravity = newGravity; }
 
-	void Update(float dt) override;
+private:
+    sf::Vector2f gravity = { 0.f, 981.f };
 };
-
