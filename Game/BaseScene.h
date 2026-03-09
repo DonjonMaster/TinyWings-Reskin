@@ -12,4 +12,3 @@ protected:
 	// permet de créer le joueur dans la scene
 	GameObject* CreatePlayer();
 };
-
