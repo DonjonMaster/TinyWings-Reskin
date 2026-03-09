@@ -4,6 +4,7 @@
 #include <WindowModule.h>
 #include <GameObject.h>
 #include <GravityComponent.h>
+#include <SpriteRendererComponent.h>
 
 #include "BaseScene.h"
 
@@ -32,6 +33,8 @@ public:
         // ici je peux créer le joueur grace au create player init dans le base scene (on peut toujours mettre les autres elements egalement)
         auto player = CreatePlayer();
         player->AddComponent<TestComponent>();
+
+        SpriteRendererComponent* playerSprite = player->GetComponent<SpriteRendererComponent>();
     }
 };
 

@@ -132,6 +132,7 @@
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GravityComponent.cpp" />
     <ClCompile Include="ModuleManager.cpp" />
+    <ClCompile Include="ResourceModule.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneModule.cpp" />
     <ClCompile Include="SpriteRendererComponent.cpp" />
@@ -143,6 +144,7 @@
     <ClInclude Include="GravityComponent.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="ModuleManager.h" />
+    <ClInclude Include="ResourceModule.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneModule.h" />
     <ClInclude Include="SpriteRendererComponent.h" />

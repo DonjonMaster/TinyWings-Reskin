@@ -19,9 +19,9 @@ void Engine::Run()
 
 	while (!shouldQuit)
 	{
-		// 1. Calcul du DeltaTime à chaque début de boucle
+		// calcul du dt à chaque début de boucle
 		float dt = clock.restart().asSeconds();
-		// Sécurité : on empêche un dt trop grand (si on déplace la fenêtre par ex)
+		// on empêche un dt trop grand (si on déplace la fenêtre par ex)
 		if (dt > 0.05f) dt = 0.05f;
 
 		moduleManager->Update(dt);

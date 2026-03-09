@@ -1,6 +1,7 @@
 #include "ModuleManager.h"
 #include "WindowModule.h"
 #include "SceneModule.h"
+#include "ResourceModule.h"
 
 void ModuleManager::Create()
 {
@@ -8,6 +9,7 @@ void ModuleManager::Create()
 	// create module ....
 	CreateModule<SceneModule>();
 	CreateModule<WindowModule>();
+	CreateModule<ResourceModule>();
 
 	for (Module* module : modules)
 		module->Create();

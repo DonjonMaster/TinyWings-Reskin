@@ -7,5 +7,6 @@ GameObject* BaseScene::CreatePlayer()
 	// puis vient les inits
 	player->GetTransform().origin = { 0.5f, 1.f };
 	player->AddComponent<GravityComponent>();
+	player->AddComponent<SpriteRendererComponent>("Assets/justeUnTest.png");
 	return player;
 }
