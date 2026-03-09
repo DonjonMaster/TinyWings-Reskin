@@ -11,15 +11,6 @@ private:
 
 public:
 
-	void Update(float dt) override
-	{
-		if (owner) {
-			auto& transform = owner->GetTransform();
-
-			transform.velocity += gravity * dt;
-			transform.pos += transform.velocity * dt;
-
-		}
-	}
+	void Update(float dt) override;
 };
 
