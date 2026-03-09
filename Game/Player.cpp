@@ -8,7 +8,6 @@
 
 void Player::Create() {
     GravityMultiplier = 1.0f;
-    // Vitesse initiale pour avancer
     owner->GetTransform().velocity = PlayerSettings::START_VELOCITY;
 }
 
@@ -20,40 +19,31 @@ void Player::Update(float dt) {
         bool isPressed = input->IsActionPressed();
 
         if (isPressed) {
-            // --- LOGIQUE DE PRESSION (AUGMENTATION) ---
-
-            // On détecte le nouvel appui pour la console
+            // Affichage console unique au moment de l'appui
             if (!wasPressedLastFrame) {
-                std::cout << "Appui detecte : Acceleration de la chute depuis x" << GravityMultiplier << std::endl;
+                std::cout << "--- Plongee activee (" << GravityMultiplier << ") -- - " << std::endl;
             }
-
-            // Plus on reste appuyé, plus on ajoute de la force au multiplicateur actuel
-            // La valeur 3.0f contrôle la vitesse à laquelle le joueur "devient lourd"
-            GravityMultiplier += 3.0f * dt;
-
+            // On augmente la gravite depuis sa valeur actuelle
+            GravityMultiplier += 4.0f * dt;
         }
         else {
-            // --- LOGIQUE DE RELACHEMENT (DIMINUTION) ---
-
+            // Affichage console unique au moment du relachement
             if (wasPressedLastFrame) {
-                std::cout << "Touche relachee : Amortissement de la gravite..." << std::endl;
+                std::cout << "--- Plongee relachee (" << GravityMultiplier << ") ---" << std::endl;
             }
-
-            // On revient progressivement vers 1.0 (Gravité par défaut)
-            // La valeur 2.0f contrôle la vitesse de "remontée" ou d'allègement
+            // On revient doucement a la gravite par defaut
             if (GravityMultiplier > 1.0f) {
-                GravityMultiplier -= 2.0f * dt;
+                GravityMultiplier -= 1.5f * dt;
             }
         }
 
-        // Sécurité : On borne le multiplicateur (ex: entre 1x et 5x la gravité)
-        GravityMultiplier = std::max(1.0f, std::min(GravityMultiplier, 5.0f));
+        // Bornes de securite : entre x1 et x6 la gravite de base
+        GravityMultiplier = std::clamp(GravityMultiplier, 1.0f, 6.0f);
 
-        // Application de la nouvelle gravité au composant
-        float finalGravityY = PlayerSettings::GRAVITY * GravityMultiplier;
-        grav->SetGravity({ 0.f, finalGravityY });
+        // Mise a jour du GravityComponent de l'Engine
+        float finalY = PlayerSettings::GRAVITY * GravityMultiplier;
+        grav->SetGravity({ 0.f, finalY });
 
-        // Sauvegarde de l'état pour la détection de changement
         wasPressedLastFrame = isPressed;
     }
 }
