@@ -5,6 +5,7 @@
 #include "GameObject.h"
 #include <iostream>
 
+// Pour définir les GameObjects
 class TestComponent : public Component {
 public:
     void Render(sf::RenderWindow* window) override {
@@ -16,6 +17,7 @@ public:
     }
 };
 
+// Pour initialiser les GameObjects
 class TestScene : public Scene {
 public:
     void Create() override {
