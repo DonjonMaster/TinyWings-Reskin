@@ -1,10 +1,12 @@
-#include "Engine.h"
-#include "ModuleManager.h"
-#include "SceneModule.h"
-#include "WindowModule.h"
-#include "GameObject.h"
-#include "GravityComponent.h"
+#include <Engine.h>
+#include <ModuleManager.h>
+#include <SceneModule.h>
+#include <WindowModule.h>
+#include <GameObject.h>
+#include <GravityComponent.h>
+
 #include "BaseScene.h"
+
 #include <iostream>
 
 // ici j'init un component
