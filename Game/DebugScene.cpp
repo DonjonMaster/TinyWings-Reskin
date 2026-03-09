@@ -3,6 +3,7 @@
 #include "SceneModule.h"
 #include "WindowModule.h"
 #include "GameObject.h"
+#include "GravityComponent.h"
 #include <iostream>
 
 class TestComponent : public Component {
@@ -11,7 +12,9 @@ public:
         // On dessine un énorme carré rouge pour être SUR de le voir
         sf::RectangleShape rect(sf::Vector2f(200, 200));
         rect.setFillColor(sf::Color::Red);
-        rect.setPosition({400, 300});
+        if (owner) {
+            rect.setPosition(owner->GetTransform().pos);
+        }
         window->draw(rect);
     }
 };
@@ -22,6 +25,7 @@ public:
         std::cout << "Scene de test creee !" << std::endl;
         GameObject* obj = CreateGameObject({ 0,0 }, "Tester");
         obj->AddComponent<TestComponent>();
+        obj->AddComponent<GravityComponent>();
     }
 };
 

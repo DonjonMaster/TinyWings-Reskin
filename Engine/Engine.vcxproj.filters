@@ -13,19 +13,22 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Fichiers d%27en-tête\Components">
+      <UniqueIdentifier>{9da3610b-0b78-4d9e-b2f9-5471d4b49001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers d%27en-tête\Modules">
+      <UniqueIdentifier>{2e873ce6-53a9-49df-87c6-bdb93f2f30a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Modules">
+      <UniqueIdentifier>{6d8dcfed-f862-4864-a50f-785afb98d320}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Components">
+      <UniqueIdentifier>{dd2f17d2-0914-4030-bc3f-59bc72743041}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ModuleManager.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="Engine.cpp">
       <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowModule.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Component.h">
-      <Filter>Fichiers d%27en-tête</Filter>
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>Fichiers sources</Filter>
@@ -33,21 +36,24 @@
     <ClCompile Include="Scene.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="Component.h">
+      <Filter>Fichiers d%27en-tête\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleManager.cpp">
+      <Filter>Fichiers sources\Modules</Filter>
+    </ClCompile>
     <ClCompile Include="SceneModule.cpp">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Fichiers sources\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowModule.cpp">
+      <Filter>Fichiers sources\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="GravityComponent.cpp">
+      <Filter>Fichiers sources\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Module.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="ModuleManager.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Engine.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowModule.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="GameObject.h">
@@ -56,22 +62,34 @@
     <ClInclude Include="Transform.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Module.h">
+      <Filter>Fichiers d%27en-tête\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleManager.h">
+      <Filter>Fichiers d%27en-tête\Modules</Filter>
+    </ClInclude>
     <ClInclude Include="Scene.h">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête\Modules</Filter>
     </ClInclude>
     <ClInclude Include="SceneModule.h">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowModule.h">
+      <Filter>Fichiers d%27en-tête\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="GravityComponent.h">
+      <Filter>Fichiers d%27en-tête\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ModuleManager.inl">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </None>
     <None Include="GameObject.inl">
       <Filter>Fichiers d%27en-tête</Filter>
     </None>
+    <None Include="ModuleManager.inl">
+      <Filter>Fichiers d%27en-tête\Modules</Filter>
+    </None>
     <None Include="SceneModule.inl">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête\Modules</Filter>
     </None>
   </ItemGroup>
 </Project>
