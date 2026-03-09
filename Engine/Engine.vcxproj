@@ -134,6 +134,7 @@
     <ClCompile Include="ModuleManager.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneModule.cpp" />
+    <ClCompile Include="SpriteRendererComponent.cpp" />
     <ClCompile Include="WindowModule.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -144,6 +145,7 @@
     <ClInclude Include="ModuleManager.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneModule.h" />
+    <ClInclude Include="SpriteRendererComponent.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="WindowModule.h" />
   </ItemGroup>

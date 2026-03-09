@@ -51,6 +51,9 @@
     <ClCompile Include="GravityComponent.cpp">
       <Filter>Fichiers sources\Components</Filter>
     </ClCompile>
+    <ClCompile Include="SpriteRendererComponent.cpp">
+      <Filter>Fichiers sources\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h">
@@ -78,6 +81,9 @@
       <Filter>Fichiers d%27en-tête\Modules</Filter>
     </ClInclude>
     <ClInclude Include="GravityComponent.h">
+      <Filter>Fichiers d%27en-tête\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteRendererComponent.h">
       <Filter>Fichiers d%27en-tête\Components</Filter>
     </ClInclude>
   </ItemGroup>
