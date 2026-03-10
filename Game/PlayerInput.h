@@ -1,7 +1,7 @@
 #pragma once
 #include "Component.h"
 
-class Player : public Component {
+class DivingInput : public Component {
 public:
     void Create() override;
     void Update(float dt) override;

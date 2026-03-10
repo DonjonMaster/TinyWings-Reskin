@@ -7,8 +7,7 @@
 #include <SpriteRendererComponent.h>
 
 #include "BaseScene.h"
-
-//#include "Player.h"
+#include "PlayerInput.h"
 #include "InputHandler.h"
 #include <iostream>
 
