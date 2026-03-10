@@ -1,6 +1,8 @@
 #include "Client.h"
+#include "World.h"
 
-Client::Client() : adress(sf::IpAddress::Any) {
+Client::Client(World *& world) : adress(sf::IpAddress::Any) {
+	this->world = world;
 	// Ajouter en paramètre les données à transférer
 	auto localIp = sf::IpAddress::getLocalAddress();
 	if (localIp) {
@@ -23,7 +25,7 @@ void Client::ReceiveData() {
 		case Settings::PacketTypes::NEW_CONNECTION: {
 			std::string k;
 			int num;
-			p >> k >> num;
+			p >> num;
 			// Ajouter le joueur visuellement
 
 			break;
@@ -67,13 +69,50 @@ void Client::disconnect() {
 	connected = false;
 }
 
+void Client::run(){
+	sf::Clock clock;
+	sf::Time t{ sf::Time::Zero };
+	sf::Time dt{ sf::seconds(1.0f / 60.f) };
+	
+	while (world->window.isOpen()) {
+
+		if (world->state == GameState::PLAYING) {
+			ReceiveData();
+		}
+
+		// On essaye de rejoindre un serveur
+		if (world->uiw.attemptJoin) {
+			AttemptJoin();
+		}
+
+		t += clock.restart();
+		while (t > dt) {
+			t -= dt;
+
+			// On échanges les données en jeu
+			if (world->state == GameState::PLAYING) {
+				SendData();
+				ReceiveData();
+			}
+
+			// Update du jeu
+			world->update(dt.asSeconds());
+		}
+
+		if (world->state == GameState::HOSTING) {
+			world->update(dt.asSeconds());
+		}
+		
+	}
+}
+
 void Client::AttemptJoin() {
 	socket.setBlocking(false);
 	// Récupérer ce que le joueur entre comme input lors d'une connexion (dans les menus)
-	std::optional<sf::IpAddress> serverIp;
-	serverPort;
-	port;
+	auto serverIp = sf::IpAddress::resolve(world->serverIPInput);
+	serverPort = std::stoul(world->serverPortInput);
 	// Récupérer ce que le joueur entre comme input lors d'une connexion (dans les menus)
+	port = std::stoul(world->userPortInput);
 
 	if (socket.bind(port) != sf::Socket::Status::Done) {
 		std::cout << "Impossible de lier le socket serveur au port donné : " << serverPort << std::endl;
@@ -88,10 +127,11 @@ void Client::AttemptJoin() {
 
 	p.clear();
 
-	// Mettre l'adresse en optionnal
 	if (socket.receive(p, serverIp, serverPort) != sf::Socket::Status::Done) {
 		std::cout << "Erreur lors de la réception des paquets";
 	}
+
+	// Ajouter les changements liée au player
 
 	socket.setBlocking(false);
 	p.clear();
@@ -99,4 +139,6 @@ void Client::AttemptJoin() {
 	connected = true;
 
 	// Attendre le lancement d'une partie
+	world->state = GameState::PLAYING;
+	world->uiw.attemptJoin = false;
 }

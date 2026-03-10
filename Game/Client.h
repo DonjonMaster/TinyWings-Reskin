@@ -7,10 +7,12 @@
 
 #include "settings.h"
 
+class World;
+
 class Client
 {
 public :
-	Client();
+	Client(World*& world);
 
 	void ReceiveData();
 	void SendData();
@@ -30,8 +32,8 @@ private:
 	unsigned short port;
 	sf::UdpSocket socket;
 
+	World* world;
 	// Ajouter les données à envoyer
 
 	bool connected{ false };
 };
-
