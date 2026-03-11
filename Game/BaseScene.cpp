@@ -18,3 +18,11 @@ GameObject* BaseScene::CreatePlayer()
 
 	return player;
 }
+
+GameObject* BaseScene::CreateHillSegment(sf::Vector2f pos, sf::Vector2f start, sf::Vector2f end, SlopeType type)
+{
+	GameObject* hill = CreateGameObject(pos, "HillSegment");
+	auto* comp = hill->AddComponent<HillComponent>();
+	comp->Init(start, end, type);
+	return hill;
+}

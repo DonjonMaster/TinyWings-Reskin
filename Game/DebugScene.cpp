@@ -34,6 +34,19 @@ public:
         player->AddComponent<TestComponent>();
 
         SpriteRendererComponent* playerSprite = player->GetComponent<SpriteRendererComponent>();
+
+        // --- COLLINE 1 ---
+        // Montée rouge
+        CreateHillSegment({ 300, 500 }, { 0, 100 }, { 200, 0 }, SlopeType::UP);
+        // Descente bleue
+        CreateHillSegment({ 300, 500 }, { 200, 0 }, { 400, 100 }, SlopeType::DOWN);
+
+        // --- COLLINE 2 ---
+        // Montée rouge
+        CreateHillSegment({ 700, 500 }, { 0, 100 }, { 250, 0 }, SlopeType::UP);
+        // Descente bleue
+        CreateHillSegment({ 700, 500 }, { 250, 0 }, { 500, 100 }, SlopeType::DOWN);
+    
     }
 };
 

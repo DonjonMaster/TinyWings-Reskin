@@ -19,6 +19,8 @@ public:
 	// Récupère les game objects dans la scène ayant le nom correspondant
 	std::vector<GameObject*> GetGameObjectsWithName(std::string name);
 
+	const std::vector<GameObject*>& GetGameObjects() const { return gameObjects; }
+
 private:
 	std::vector<GameObject*> gameObjects;
 	std::vector<GameObject*> gameObjectsToDelete;
