@@ -35,12 +35,21 @@ public:
 
         SpriteRendererComponent* playerSprite = player->GetComponent<SpriteRendererComponent>();
 
-        // Création d'une colline automatique
-        GameObject* h = CreateGameObject({ 0, 400 }, "AutoHill");
+        // creation d'une colline automatique
+        GameObject* h = CreateGameObject({ -100, 400 }, "AutoHill");
         auto* hill = h->AddComponent<HillComponent>();
 
-        // Assure-toi que le nom correspond à la fonction du .h
+        // le nom correspond à la fonction du .h
         hill->InitFromImage("Assets/nuage1.png", 10);
+
+
+        GameObject* h2 = CreateGameObject({ 330, 450}, "AutoHill2");
+        auto* hill2 = h2->AddComponent<HillComponent>();
+        hill2->InitFromImage("Assets/nuage2.png", 10);
+
+        GameObject* h3 = CreateGameObject({ 500, -350 }, "AutoHill3");
+        auto* hill3 = h3->AddComponent<HillComponent>();
+        hill3->InitFromImage("Assets/nuage3.png", 10);
     
     }
 };
