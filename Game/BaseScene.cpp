@@ -5,7 +5,6 @@
 GameObject* BaseScene::CreatePlayer()
 {
 	// On commence par enregistrer le joueur dans la scene
-	GameObject* player = CreateGameObject({ 240, 120 }, "Player");
 
 	// Configuration du transform
 	player->GetTransform().origin = { 0.5f, 1.f };
@@ -19,6 +18,7 @@ GameObject* BaseScene::CreatePlayer()
 	return player;
 }
 
+// init des hills
 GameObject* BaseScene::CreateHillSegment(sf::Vector2f pos, sf::Vector2f start, sf::Vector2f end, SlopeType type)
 {
 	GameObject* hill = CreateGameObject(pos, "HillSegment");

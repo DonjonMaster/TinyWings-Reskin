@@ -16,4 +16,7 @@ protected:
 
 	// permet de créer un segment des collines
 	GameObject* CreateHillSegment(sf::Vector2f pos, sf::Vector2f start, sf::Vector2f end, SlopeType type);
+
+private:
+	GameObject* player = CreateGameObject({ 240, 120 }, "Player");
 };
