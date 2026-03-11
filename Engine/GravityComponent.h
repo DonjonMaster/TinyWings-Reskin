@@ -10,6 +10,8 @@ public:
     void SetGravity(sf::Vector2f newGravity);
     sf::Vector2f GetGravity();
 
+    bool enableGravity = false;
+
 private:
     sf::Vector2f gravity = { 0.f, 981.f };
 };

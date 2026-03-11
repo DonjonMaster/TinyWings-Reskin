@@ -5,6 +5,7 @@
 #include "GameObject.h"
 #include "ResourceModule.h"
 #include "ModuleManager.h"
+#include "SpriteAnimationRule.h"
 #include <string>
 
 class SpriteRendererComponent : public Component
@@ -12,6 +13,8 @@ class SpriteRendererComponent : public Component
 private:
 	sf::Sprite* sprite;
 	bool isVisible;
+	std::optional<SpriteAnimationRule> animationRule;
+	float elapsedAnimationTime = 0.f;
 
 public:
 	SpriteRendererComponent(std::string path);
@@ -20,5 +23,6 @@ public:
 
 	bool SetIsVisible(bool isVisible);
 
+	void SetAnimationRule(const SpriteAnimationRule& animationRule);
 };
 

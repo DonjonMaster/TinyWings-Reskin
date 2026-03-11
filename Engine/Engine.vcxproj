@@ -137,12 +137,14 @@
     <ClCompile Include="ResourceModule.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneModule.cpp" />
+    <ClCompile Include="SpriteAnimationRule.h" />
     <ClCompile Include="SpriteRendererComponent.cpp" />
     <ClCompile Include="WindowModule.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Engine.h" />
+    <ClInclude Include="FSMComponent.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GravityComponent.h" />
     <ClInclude Include="HillComponent.h" />
@@ -153,13 +155,18 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneModule.h" />
     <ClInclude Include="SpriteRendererComponent.h" />
+    <ClInclude Include="State.h" />
+    <ClInclude Include="StateMachine.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="WindowModule.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="FSMComponent.inl" />
     <None Include="GameObject.inl" />
     <None Include="ModuleManager.inl" />
     <None Include="SceneModule.inl" />
+    <None Include="State.inl" />
+    <None Include="StateMachine.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

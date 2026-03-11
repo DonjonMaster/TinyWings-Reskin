@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="BaseScene.cpp" />
     <ClCompile Include="DebugScene.cpp" />
+    <ClCompile Include="TestState.cpp" />
     <ClCompile Include="PlayerInput.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +143,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseScene.h" />
+    <ClInclude Include="TestState.h" />
+    <ClInclude Include="PlayerContext.h" />
     <ClInclude Include="PlayerInput.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

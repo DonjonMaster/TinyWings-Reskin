@@ -25,6 +25,9 @@
     <Filter Include="Fichiers sources\Components">
       <UniqueIdentifier>{dd2f17d2-0914-4030-bc3f-59bc72743041}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers d%27en-tête\States">
+      <UniqueIdentifier>{2e29bdf2-f245-419d-b1cb-542116dd90d5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine.cpp">
@@ -62,6 +65,9 @@
     </ClCompile>
     <ClCompile Include="HillComponent.cpp">
       <Filter>Fichiers sources\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteAnimationRule.h">
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -101,8 +107,17 @@
     <ClInclude Include="ResourceModule.h">
       <Filter>Fichiers d%27en-tête\Modules</Filter>
     </ClInclude>
+    <ClInclude Include="FSMComponent.h">
+      <Filter>Fichiers d%27en-tête\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="State.h">
+      <Filter>Fichiers d%27en-tête\States</Filter>
+    </ClInclude>
+    <ClInclude Include="StateMachine.h">
+      <Filter>Fichiers d%27en-tête\States</Filter>
+    </ClInclude>
     <ClInclude Include="SpriteRendererComponent.h">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête\Components</Filter>
     </ClInclude>
     <ClInclude Include="HillComponent.h">
       <Filter>Fichiers d%27en-tête\Components</Filter>
@@ -117,6 +132,15 @@
     </None>
     <None Include="SceneModule.inl">
       <Filter>Fichiers d%27en-tête\Modules</Filter>
+    </None>
+    <None Include="FSMComponent.inl">
+      <Filter>Fichiers d%27en-tête\Components</Filter>
+    </None>
+    <None Include="State.inl">
+      <Filter>Fichiers d%27en-tête\States</Filter>
+    </None>
+    <None Include="StateMachine.inl">
+      <Filter>Fichiers d%27en-tête\States</Filter>
     </None>
   </ItemGroup>
 </Project>
