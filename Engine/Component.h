@@ -12,5 +12,5 @@ public:
 	virtual void Destroy() {};
 
 protected:
-	GameObject* owner;
+	GameObject* owner = nullptr;
 };

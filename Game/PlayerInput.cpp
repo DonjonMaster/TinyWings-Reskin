@@ -20,41 +20,38 @@ void DivingInput::Update(float dt) {
     auto& transform = owner->GetTransform();
 
     if (input && grav) {
-        // --- Ta logique de gravité actuelle (NE PAS MODIFIER) ---
+        // --- Logique Gravité ---
         bool isPressed = input->IsActionPressed();
-        if (isPressed) {
-            GravityMultiplier += 9.0f * dt;
-        }
-        else {
-            if (GravityMultiplier > 1.0f) GravityMultiplier -= 1.5f * dt;
-        }
+        if (isPressed) GravityMultiplier += 9.0f * dt;
+        else if (GravityMultiplier > 1.0f) GravityMultiplier -= 1.5f * dt;
         GravityMultiplier = std::clamp(GravityMultiplier, 1.0f, 6.0f);
-        float finalY = PlayerSettings::GRAVITY * GravityMultiplier;
-        grav->SetGravity({ 0.f, finalY });
+        grav->SetGravity({ 0.f, PlayerSettings::GRAVITY * GravityMultiplier });
 
-        // --- GESTION DES COLLISIONS ---
+        // --- Logique Collision Auto-Hill ---
         Scene* currentScene = owner->GetScene();
         if (currentScene) {
-            // ATTENTION : Si GetGameObjects() n'existe pas, vérifie le nom dans Scene.h
-            // Si c'est une variable publique, utilise : currentScene->gameObjects
-            auto& allObjects = currentScene->GetGameObjects();
+            const auto& allObjects = currentScene->GetGameObjects();
 
             for (GameObject* obj : allObjects) {
-                HillComponent* hill = obj->GetComponent<HillComponent>();
+                auto* hill = obj->GetComponent<HillComponent>();
                 if (!hill) continue;
 
-                sf::Vector2f start = hill->GetWorldStart();
-                sf::Vector2f end = hill->GetWorldEnd();
+                const auto& segments = hill->GetSegments();
+                for (const auto& seg : segments) {
+                    sf::Vector2f wStart = hill->GetWorldPos(seg.start);
+                    sf::Vector2f wEnd = hill->GetWorldPos(seg.end);
 
-                // Si le joueur est au-dessus du segment de colline
-                if (transform.pos.x >= start.x && transform.pos.x <= end.x) {
-                    float progress = (transform.pos.x - start.x) / (end.x - start.x);
-                    float hillY = start.y + progress * (end.y - start.y);
+                    // Vérifie si le joueur est horizontalement dans ce segment
+                    if (transform.pos.x >= wStart.x && transform.pos.x <= wEnd.x) {
+                        // Interpolation pour trouver le Y précis sur la pente
+                        float t = (transform.pos.x - wStart.x) / (wEnd.x - wStart.x);
+                        float groundY = wStart.y + t * (wEnd.y - wStart.y);
 
-                    // Si on touche ou traverse la colline
-                    if (transform.pos.y >= hillY) {
-                        transform.pos.y = hillY; // On replace sur la colline
-                        if (transform.velocity.y > 0) transform.velocity.y = 0;
+                        if (transform.pos.y >= groundY) {
+                            transform.pos.y = groundY;
+                            if (transform.velocity.y > 0) transform.velocity.y = 0;
+                        }
+                        break; // Segment trouvé, on sort de la boucle segments
                     }
                 }
             }

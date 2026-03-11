@@ -35,17 +35,12 @@ public:
 
         SpriteRendererComponent* playerSprite = player->GetComponent<SpriteRendererComponent>();
 
-        // --- COLLINE 1 ---
-        // Montée rouge
-        CreateHillSegment({ 300, 500 }, { 0, 100 }, { 200, 0 }, SlopeType::UP);
-        // Descente bleue
-        CreateHillSegment({ 300, 500 }, { 200, 0 }, { 400, 100 }, SlopeType::DOWN);
+        // Création d'une colline automatique
+        GameObject* h = CreateGameObject({ 0, 400 }, "AutoHill");
+        auto* hill = h->AddComponent<HillComponent>();
 
-        // --- COLLINE 2 ---
-        // Montée rouge
-        CreateHillSegment({ 700, 500 }, { 0, 100 }, { 250, 0 }, SlopeType::UP);
-        // Descente bleue
-        CreateHillSegment({ 700, 500 }, { 250, 0 }, { 500, 100 }, SlopeType::DOWN);
+        // Assure-toi que le nom correspond à la fonction du .h
+        hill->InitFromImage("Assets/nuage1.png", 10);
     
     }
 };
