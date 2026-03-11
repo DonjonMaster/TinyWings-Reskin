@@ -1,13 +1,13 @@
 #include "PlayerInput.h"
-#include "GameObject.h"      // Corrige "type incomplet"
+#include "GameObject.h"      
 #include "Constants.h"
 #include "GravityComponent.h"
 #include "InputHandler.h"
-#include "HillComponent.h"   // Corrige "GetWorldStart n'est pas membre"
-#include <Scene.h>           // Indispensable pour accéder à la scène
+#include "HillComponent.h"   
+#include <Scene.h>           
 #include <iostream>
 #include <algorithm>
-#include <vector>            // Indispensable pour allObjects
+#include <vector>           
 
 void DivingInput::Create() {
     GravityMultiplier = 1.0f;
@@ -22,7 +22,7 @@ void DivingInput::Update(float dt) {
     if (input && grav) {
         // --- Logique Gravité ---
         bool isPressed = input->IsActionPressed();
-        if (isPressed) GravityMultiplier += 9.0f * dt;
+        if (isPressed) GravityMultiplier += 10.0f * dt;
         else if (GravityMultiplier > 1.0f) GravityMultiplier -= 1.5f * dt;
         GravityMultiplier = std::clamp(GravityMultiplier, 1.0f, 6.0f);
         grav->SetGravity({ 0.f, PlayerSettings::GRAVITY * GravityMultiplier });
@@ -32,9 +32,8 @@ void DivingInput::Update(float dt) {
         if (currentScene) {
             const auto& allObjects = currentScene->GetGameObjects();
 
-            // On autorise un enfoncement maximum de 150 pixels par frame.
-            // Au-delà, l'algorithme considèrera que c'est une colline au-dessus du joueur (un plafond)
-            float minPenetration = 150.0f;
+
+            float minPenetration = 10.0f; // range du joueur pour que la collision fonctionne, pour pas se tp sur des collines au dessus
             float bestGroundY = 0.0f;
             bool foundGround = false;
 
@@ -52,7 +51,7 @@ void DivingInput::Update(float dt) {
                         float t = (transform.pos.x - wStart.x) / (wEnd.x - wStart.x);
                         float groundY = wStart.y + t * (wEnd.y - wStart.y);
 
-                        // Calcul de la distance entre le joueur et ce sol
+                        // calcul de la distance entre le joueur et ce sol
                         float penetration = transform.pos.y - groundY;
 
                         // Si le joueur est sous le sol (penetration >= 0) 

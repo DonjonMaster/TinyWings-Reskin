@@ -47,7 +47,7 @@ public:
         auto* hill2 = h2->AddComponent<HillComponent>();
         hill2->InitFromImage("Assets/nuage2.png", 10);
 
-        GameObject* h3 = CreateGameObject({ 500, -350 }, "AutoHill3");
+        GameObject* h3 = CreateGameObject({ 500, 350 }, "AutoHill3");
         auto* hill3 = h3->AddComponent<HillComponent>();
         hill3->InitFromImage("Assets/nuage3.png", 10);
     
