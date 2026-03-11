@@ -13,7 +13,7 @@ struct Connection {
 
 	int playerNumber{ 0 };
 
-	// Information des joueurs et de leurs positions dans le monde (données à envoyer / recevoir)
+	// Ajouter information des joueurs et de leurs positions dans le monde (données à envoyer / recevoir)
 };
 
 class Server

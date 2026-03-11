@@ -75,6 +75,7 @@ void Client::run(){
 	sf::Time dt{ sf::seconds(1.0f / 60.f) };
 	
 	while (world->window.isOpen()) {
+		world->processEvents();
 
 		if (world->state == GameState::PLAYING) {
 			ReceiveData();
@@ -103,6 +104,7 @@ void Client::run(){
 			world->update(dt.asSeconds());
 		}
 		
+		world->render();
 	}
 }
 

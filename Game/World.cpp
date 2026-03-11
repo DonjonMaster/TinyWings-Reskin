@@ -18,7 +18,9 @@ World::World() :
 
 	state = MAIN_MENU;
 
-	if (!font.openFromFile("Assets/Fonts/arial.ttf")) {
+    window.create(sf::VideoMode({ 1280, 720 }), "Tiny Wings");
+
+	if (!font.openFromFile("Assets/Fonts/Independent Modern 8x8.ttf")) {
 		std::cout << "Impossible de charger la police" << std::endl;
 	}
 
@@ -96,6 +98,7 @@ void World::update(float dt) {
         break;
     case GameState::PLAYING:
         // Update du joueur
+        break;
     case GameState::HOST:
         if (uiw.goBackToMain) {
             uiw.goBackToMain = false;
@@ -108,9 +111,10 @@ void World::update(float dt) {
                 state = HOSTING;
             }
         }
-
+        break;
     case GameState::HOSTING:
         server.ReceiveData();
+        break;
     default:
         break;
     }
@@ -154,11 +158,55 @@ void World::render() {
         window.draw(serverIpText);
         window.draw(serverPortDisplay);
         window.draw(hostMenuInfo);
+        break;
     default:
         break;
     }
 
     window.display();
+}
+
+void World::processEvents() {
+    while (const std::optional event = window.pollEvent()) {
+        if (event->is<sf::Event::Closed>()) {
+            window.close();
+        }
+        else if (const auto* textEntered = event->getIf<sf::Event::TextEntered>()) {
+            if (textEntered->unicode < 256) {
+                switch (uiw.currentSelected) {
+                case UserInputWindow::SelectedBox::userPortSelect:
+                    if (textEntered->unicode == 8 && !userPortInput.empty()) {
+                        userPortInput.pop_back();
+                    }
+                    else if (textEntered->unicode != 8) {
+                        userPortInput += static_cast<char>(textEntered->unicode);
+                    }
+                    userPortDisplay.setString(userPortInput);
+                    break;
+                case UserInputWindow::SelectedBox::serverIPSelect:
+                    if (textEntered->unicode == 8 && !serverIPInput.empty()) {
+                        serverIPInput.pop_back();
+                    }
+                    else if (textEntered->unicode != 8) {
+                        serverIPInput += static_cast<char>(textEntered->unicode);
+                    }
+                    serverIpDisplay.setString(serverIPInput);
+                    break;
+                case UserInputWindow::SelectedBox::serverPortSelect:
+                    if (textEntered->unicode == 8 && !serverPortInput.empty()) {
+                        serverPortInput.pop_back();
+                    }
+                    else if (textEntered->unicode != 8) {
+                        serverPortInput += static_cast<char>(textEntered->unicode);
+                    }
+                    serverPortDisplay.setString(serverPortInput);
+                    break;
+                case UserInputWindow::SelectedBox::none:
+                    break;
+                }
+            }
+        }
+    }
 }
 
 World::UserInputWindow::UserInputWindow() {

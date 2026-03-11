@@ -1,5 +1,6 @@
 #pragma once
 
+// Types de paquets
 namespace Settings {
 	enum PacketTypes : int {
 		NEW_CONNECTION = 1,
