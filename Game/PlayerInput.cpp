@@ -69,7 +69,7 @@ void DivingInput::Update(float dt) {
                             else { // SlopeType::UP (Zone Rouge)
                                 // Ralentissement en montée
                                 currentSpeed -= 1000.f * dt;
-                                if (currentSpeed < 150.f) currentSpeed = 150.f; // Vitesse mini pour ne pas bloquer
+                                if (currentSpeed < 100.f) currentSpeed = 100.f; // Vitesse mini pour ne pas bloquer
                             }
 
                             // On réaligne la vélocité sur la pente pour "coller" au sol
