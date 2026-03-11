@@ -5,11 +5,15 @@
 #include <GameObject.h>
 #include <GravityComponent.h>
 #include <SpriteRendererComponent.h>
+#include <FSMComponent.h>
 
 #include "BaseScene.h"
 #include "PlayerInput.h"
 #include "InputHandler.h"
+#include "PlayerContext.h"
+#include "TestState.h"
 #include <iostream>
+
 
 class TestComponent : public Component {
 public:
@@ -34,13 +38,27 @@ public:
         player->AddComponent<TestComponent>();
 
         SpriteRendererComponent* playerSprite = player->GetComponent<SpriteRendererComponent>();
+
+        // FSM du Player
+        auto playerFSM = player->AddComponent<FSMComponent<PlayerContext>>();
+        auto& machine = playerFSM->fsm;
+        auto& ctx = playerFSM->context;
+
+        ctx.player = player;
+        ctx.playerSprite = playerSprite;
+
+        TestState* test = machine.CreateState<TestState>();
+
+        machine.Init(test, ctx);
     }
 };
 
 int main() {
+    // init necessessaire
     Engine* engine = Engine::GetInstance();
     engine->Initialize();
 
+    // application de la scene
     SceneModule* sm = engine->GetModuleManager()->GetModule<SceneModule>();
     if (sm) {
         sm->RegisterScene<TestScene>("Test");

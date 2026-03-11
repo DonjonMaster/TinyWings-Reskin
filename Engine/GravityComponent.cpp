@@ -2,7 +2,13 @@
 #include "GameObject.h"
 
 void GravityComponent::Update(float dt) {
-    if (owner) {
+
+    // activé ou desactivé la gravité 
+    if (!enableGravity && sf::Keyboard::isKeyPressed(sf::Keyboard::Key::G)) enableGravity = true;
+    else if (enableGravity && sf::Keyboard::isKeyPressed(sf::Keyboard::Key::G)) enableGravity = false;
+
+    // si c'est activé on l'update
+    if (owner && enableGravity) {
         auto& transform = owner->GetTransform();
 
         transform.velocity += gravity * dt;
@@ -12,7 +18,10 @@ void GravityComponent::Update(float dt) {
 
 void GravityComponent::SetGravity(sf::Vector2f newGravity)
 {
-    this->gravity = newGravity;
+    if (enableGravity)
+    {
+        this->gravity = newGravity;
+    }
 }
 
 sf::Vector2f GravityComponent::GetGravity()

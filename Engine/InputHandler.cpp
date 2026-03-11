@@ -4,4 +4,5 @@
 void InputHandler::Update(float dt) {
 
     isPressed = (SPACE || LMOUSE);
+
 }
