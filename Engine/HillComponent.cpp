@@ -13,7 +13,7 @@ void HillComponent::Init(sf::Vector2f start, sf::Vector2f end, SlopeType type) {
 void HillComponent::InitFromImage(const std::string& texturePath, int precision) {
     sf::Image image;
 
-    // On vérifie le chargement de l'image (nodiscard)
+    // on vérifie le chargement de l'image (nodiscard)
     if (!image.loadFromFile(texturePath)) {
         return;
     }
@@ -23,7 +23,7 @@ void HillComponent::InitFromImage(const std::string& texturePath, int precision)
         return;
     }
 
-    // SFML 3.0 : On crée le sprite SEULEMENT maintenant, en lui passant la texture
+    // creation du sprite 
     sprite = std::make_unique<sf::Sprite>(*texture);
     hasImage = true;
 

@@ -22,7 +22,7 @@ void DivingInput::Update(float dt) {
     if (input && grav) {
         // --- Gestion de la Gravité (ton code existant) ---
         bool isPressed = input->IsActionPressed();
-        if (isPressed) GravityMultiplier += 9.0f * dt;
+        if (isPressed) GravityMultiplier += 10.0f * dt;
         else if (GravityMultiplier > 1.0f) GravityMultiplier -= 1.5f * dt;
         GravityMultiplier = std::clamp(GravityMultiplier, 1.0f, 6.0f);
         grav->SetGravity({ 0.f, PlayerSettings::GRAVITY * GravityMultiplier });
