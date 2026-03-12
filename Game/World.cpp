@@ -13,7 +13,8 @@ World::World() :
 	startServerHostText(font),
 	goBackText(font),
 	serverIpText(font),
-	hostMenuInfo(font)
+	hostMenuInfo(font),
+    startGameText(font)
 {
 
 	state = MAIN_MENU;
@@ -23,6 +24,8 @@ World::World() :
 	if (!font.openFromFile("Assets/Fonts/Independent Modern 8x8.ttf")) {
 		std::cout << "Impossible de charger la police" << std::endl;
 	}
+
+	uiw = UserInputWindow();
 
 	gameName.setStyle(sf::Text::Bold);
 	gameName.setCharacterSize(50);
@@ -44,7 +47,6 @@ World::World() :
 	serverPort.setString("Enter server port: ");
 	serverPort.setPosition(sf::Vector2f{ uiw.serverPortBox.getPosition().x, 400 });
 
-	uiw = UserInputWindow();
 
 	userPortDisplay.setStyle(sf::Text::Bold);
 	userPortDisplay.setCharacterSize(20);
@@ -79,13 +81,18 @@ World::World() :
 
 	serverIpText.setStyle(sf::Text::Bold);
 	serverIpText.setCharacterSize(40);
-	serverIpText.setString("Server IP: Resolving...");
+	serverIpText.setString("Server IP: Start server to reveal");
 	serverIpText.setPosition(sf::Vector2f{ 350, 315 });
 
 	hostMenuInfo.setStyle(sf::Text::Bold);
 	hostMenuInfo.setCharacterSize(20);
 	hostMenuInfo.setPosition(sf::Vector2f{ 275, 400 });
 	hostMenuInfo.setString("Le serveur est en cours d'éxecution. Fermez la fenêtre pour fermer le serveur");
+
+    startGameText.setStyle(sf::Text::Bold);
+    startGameText.setCharacterSize(20);
+    startGameText.setPosition(sf::Vector2f{ uiw.startGameButton.getPosition().x + 22, uiw.startGameButton.getPosition().y + 12 });
+    startGameText.setString("START GAME");
 }
 
 void World::update(float dt) {
@@ -115,6 +122,9 @@ void World::update(float dt) {
         break;
     case GameState::HOSTING:
         server.ReceiveData();
+        if (uiw.attemptStartGame) {
+            // lancer le jeu
+        }
         break;
     default:
         break;
@@ -156,9 +166,13 @@ void World::render() {
         window.draw(serverPortDisplay);
         break;
     case GameState::HOSTING:
+        uiw.update(window, state);
+        window.draw(uiw.startGameButton);
+
         window.draw(serverIpText);
         window.draw(serverPortDisplay);
         window.draw(hostMenuInfo);
+        window.draw(startGameText);
         break;
     default:
         break;
@@ -240,6 +254,10 @@ World::UserInputWindow::UserInputWindow() {
 	goBackButton.setSize(sf::Vector2f{ 100, 50 });
 	goBackButton.setPosition(sf::Vector2f{ 100, 200 });
 	goBackButton.setFillColor(darkGreen);
+
+    startGameButton.setSize(sf::Vector2f{ 200, 50 });
+    startGameButton.setPosition(sf::Vector2f{ 500, 575 });
+    startGameButton.setFillColor(sf::Color::Green);
 }
 
 void World::UserInputWindow::draw(sf::RenderWindow& w) {
@@ -368,6 +386,18 @@ void World::UserInputWindow::update(sf::RenderWindow& w, GameState g) {
             serverPortBox.setFillColor(lightGray);
         }
 
+        break;
+    case HOSTING:
+        if (startGameButton.getGlobalBounds().contains(sf::Vector2f{ static_cast<float> (mousePosition.x), static_cast<float> (mousePosition.y) })) {
+            startGameButton.setFillColor(lightGreen);
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+                attemptStartGame = true;
+                currentSelected = none;
+            }
+        }
+        else {
+            startGameButton.setFillColor(darkGreen);
+        }
         break;
     default:
         break;

@@ -14,6 +14,8 @@ struct Connection {
 	int playerNumber{ 0 };
 
 	// Ajouter information des joueurs et de leurs positions dans le monde (données à envoyer / recevoir)
+	sf::Vector2f position{ 0, 0 };
+	int score{ 0 };
 };
 
 class Server
@@ -28,6 +30,8 @@ public:
 	void SendData(std::string& sender, sf::Packet& p);
 	void SendInitialData(Connection& c);
 	void SendDataToEveryone(sf::Packet& p);
+
+	void BroadcastGame();
 
 	sf::IpAddress GetIp();
 	unsigned short serverPort;

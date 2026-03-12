@@ -25,13 +25,18 @@ void Client::ReceiveData() {
 		case Settings::PacketTypes::NEW_CONNECTION: {
 			std::string k;
 			int num;
-			if (p >> num >> k) {
+			if (p >> k >> num) {
 				std::cout << "Connecté en tant que joueur " << num << " (ID: " << k << ")\n";
 				// Une fois connecté, on envoie un message de test
 				SendStringMessage("Bonjour serveur, je suis connecte !");
 			}
 			// Ajouter le joueur visuellement
 
+			break;
+		}
+		case Settings::PacketTypes::START_GAME: {
+			std::cout << "Le serveur à lancé la partie" << std::endl;
+			world->state = GameState::PLAYING;
 			break;
 		}
 		case Settings::PacketTypes::DISCONNECT: {
@@ -60,9 +65,13 @@ void Client::SendStringMessage(const std::string& message) {
 void Client::SendData() {
 	std::string msg;
 	sf::Packet p;
+	p << static_cast<int>(Settings::PacketTypes::PLAYER_DATA);
 
+	sf::Vector2f currentPos = { 100.f, 200.f };
+	int currentScore = 10;
+
+	p << currentPos.x << currentPos.y << currentScore;
 	// Ajouter l'envoi de la position
-
 	if (socket.send(p, serverIp, serverPort) == sf::Socket::Status::Done) {
 
 	}

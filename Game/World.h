@@ -42,6 +42,8 @@ public:
         sf::RectangleShape hostButton;
         sf::RectangleShape startServerHostButton;
         sf::RectangleShape goBackButton;
+        
+        sf::RectangleShape startGameButton;
 
         sf::Color lightGray{ 200, 200, 200 };
         sf::Color gray{ 152, 156, 155 };
@@ -53,6 +55,7 @@ public:
         bool goToHostScreen{ false };
         bool goBackToMain{ false };
         bool attemptStartServer{ false };
+        bool attemptStartGame{ false };
 
 
     public:
@@ -79,6 +82,7 @@ public:
     sf::Text goBackText;
     sf::Text serverIpText;
     sf::Text hostMenuInfo;
+    sf::Text startGameText;
     std::string userPortInput{};
     std::string serverIPInput{};
     std::string serverPortInput{};

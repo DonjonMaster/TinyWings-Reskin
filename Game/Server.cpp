@@ -40,7 +40,7 @@ void Server::ReceiveData() {
 
 		switch (Settings::PacketTypes(header)) {
 		case Settings::PacketTypes::NEW_CONNECTION: {
-			if (connections.size() == 2) {
+			if (connections.size() == 1) {
 				std::cout << "Un joueur a essayé de se connecter. Le lobby est plein." << std::endl;
 				return;
 			}
@@ -63,17 +63,30 @@ void Server::ReceiveData() {
 			}
 
 			SendInitialData(c);
-			std::cout << "Les données initales du Joueur 1 ont été envoyées" << std::endl;
 
-			std::cout << "Nouvelle connexion avec " << *senderIp << c.port << std::endl;
+			std::cout << "Nouvelle connexion avec " << *senderIp << ":" << c.port << std::endl;
 			std::cout << "Connexions total : " << connections.size() << std::endl;
 
 			break;
 		}
-		case Settings::STRING_MESSAGE: {
+		case Settings::PacketTypes::STRING_MESSAGE: {
 			std::string receivedMsg;
 			if (packet >> receivedMsg) {
 				std::cout << "[MESSAGE de " << senderKey << "] : " << receivedMsg << std::endl;
+			}
+			break;
+		}
+		case Settings::PacketTypes::PLAYER_DATA: {
+			sf::Vector2f pos;
+			int score;
+			if (packet >> pos.x >> pos.y >> score) {
+				connections[senderKey].position = pos;
+				connections[senderKey].score = score;
+
+				// Envoi aux autres joueurs
+				sf::Packet relay;
+				relay << static_cast<int>(Settings::PacketTypes::PLAYER_DATA) << senderKey << pos.x << pos.y << score;
+				SendData(senderKey, relay);
 			}
 			break;
 		}
@@ -114,7 +127,7 @@ void Server::SendInitialData(Connection& c)
 	for (const auto& [key, val] : connections) {
 		p << Settings::PacketTypes::NEW_CONNECTION << key << val.playerNumber;
 		if (serverSocket.send(p, c.address, c.port) == sf::Socket::Status::Done) {
-
+			std::cout << "Les données initales du Joueur" << val.playerNumber << "ont été envoyées" << std::endl;
 		}
 		p.clear();
 	}
@@ -124,6 +137,17 @@ void Server::SendDataToEveryone(sf::Packet& p)
 {
 	for (const auto& [key, val] : connections) {
 		if (serverSocket.send(p, val.address, val.port) == sf::Socket::Status::Done) {
+
+		}
+	}
+}
+
+void Server::BroadcastGame()
+{
+	sf::Packet p;
+	p << static_cast<int>(Settings::PacketTypes::START_GAME);
+	for (auto& [key, con] : connections) {
+		if (serverSocket.send(p, con.address, con.port) == sf::Socket::Status::Done) {
 
 		}
 	}
