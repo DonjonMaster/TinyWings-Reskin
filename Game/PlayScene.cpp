@@ -8,8 +8,8 @@ void PlayScene::Create()
     background->SetZOrder(-10);
 
     // creation d'une colline automatique
-    GameObject* h = CreateGameObject({ -100, 400 }, "AutoHill");
-    h->GetTransform().scale = { 10.0f, 10.0f };
+    GameObject* h = CreateGameObject({ -100, -20 }, "AutoHill");
+    h->GetTransform().scale = { 5.0f, 5.0f};
     auto* hill = h->AddComponent<HillComponent>();
     h->SetZOrder(0);
 
