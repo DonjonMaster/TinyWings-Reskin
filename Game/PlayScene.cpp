@@ -9,7 +9,7 @@ void PlayScene::Create()
 
     // creation d'une colline automatique
     GameObject* h = CreateGameObject({ -100, -20 }, "AutoHill");
-    h->GetTransform().scale = { 5.0f, 5.0f};
+    h->GetTransform().scale = { 8.0f, 8.0f};
     auto* hill = h->AddComponent<HillComponent>();
     h->SetZOrder(0);
 
@@ -21,6 +21,7 @@ void PlayScene::Create()
     // ici je peux créer le joueur grace au create player init dans le base scene (on peut toujours mettre les autres elements egalement)
     GameObject* player = CreatePlayer();
     player->SetZOrder(10);
+    player->GetTransform().scale = { 1.0f, 1.0f };
     //player->AddComponent<TestComponent>();
 
     SpriteRendererComponent* playerSprite = player->GetComponent<SpriteRendererComponent>();
