@@ -17,19 +17,6 @@
 
 #define DEBUG
 
-//class TestComponent : public Component {
-//public:
-//    void Render(sf::RenderWindow* window) override {
-//        // On dessine un énorme carré rouge pour être SUR de le voir
-//        sf::RectangleShape rect(sf::Vector2f(10, 10));
-//        rect.setFillColor(sf::Color::Red);
-//        if (owner) {
-//            rect.setPosition(owner->GetTransform().pos);
-//        }
-//        window->draw(rect);
-//    }
-//};
-
 int main() {
     // init necessessaire
     Engine* engine = Engine::GetInstance();
