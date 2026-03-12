@@ -34,6 +34,7 @@ void BackgroundScroller::PreloadChunks()
 
             auto sprite = std::make_unique<sf::Sprite>(layer->textures[textureIndex]);
 
+            sprite->setScale(sf::Vector2f(2.5f, 2.5f));
             sprite->setPosition(sf::Vector2f(i * chunkWidth, 0.f));
 
             layer->activeSprites.push_back(std::move(sprite));
