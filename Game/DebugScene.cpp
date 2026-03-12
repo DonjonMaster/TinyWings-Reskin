@@ -13,6 +13,10 @@
 #include "PlayerContext.h"
 #include "TestState.h"
 #include "PlayScene.h"
+
+#include "Server.h"
+#include "Client.h"
+#include "World.h"
 #include <iostream>
 
 #define DEBUG
@@ -21,6 +25,8 @@ int main() {
     // init necessessaire
     Engine* engine = Engine::GetInstance();
     engine->Initialize();
+
+    World* w = new World{};
 
     // application de la scene
     SceneModule* sm = engine->GetModuleManager()->GetModule<SceneModule>();
@@ -38,6 +44,6 @@ int main() {
 #endif // DEBUG
     }
 
-    engine->Run();
-    return 0;
+    Client c{ w };
+    c.run();
 }
