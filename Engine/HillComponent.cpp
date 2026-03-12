@@ -52,7 +52,14 @@ void HillComponent::InitFromImage(const std::string& texturePath, int precision)
 
 sf::Vector2f HillComponent::GetWorldPos(sf::Vector2f localPos) const {
     if (!owner) return localPos;
-    return owner->GetTransform().pos + localPos;
+    
+    // On récupère l'échelle de notre GameObject
+    sf::Vector2f scale = owner->GetTransform().scale;
+    
+    // On étire la position locale (les points de collision) avec l'échelle
+    sf::Vector2f scaledLocalPos(localPos.x * scale.x, localPos.y * scale.y);
+    
+    return owner->GetTransform().pos + scaledLocalPos;
 }
 
 void HillComponent::Render(sf::RenderWindow* window) {
@@ -61,6 +68,10 @@ void HillComponent::Render(sf::RenderWindow* window) {
     // Si on a une image et que le sprite est bien initialisé
     if (hasImage && sprite) {
         sprite->setPosition(owner->GetTransform().pos);
+        
+        // AJOUT : On étire l'image selon le scale défini dans le Transform
+        sprite->setScale(owner->GetTransform().scale);
+        
         window->draw(*sprite);
     }
 

@@ -21,7 +21,7 @@ void SpriteRendererComponent::Update(float dt)
 	if (animationRule) {
 		auto rule = animationRule.value();
 		elapsedAnimationTime += dt * rule.speed;
-		int frame = int(elapsedAnimationTime * ANIMATION_SPEED) % (rule.frames - 1);
+		int frame = int(elapsedAnimationTime * ANIMATION_SPEED) % (rule.frames);
 		sprite->setTextureRect({ { rule.pos.x + frame * rule.size.x, rule.pos.y }, rule.size });
 
 	}

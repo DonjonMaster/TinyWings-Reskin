@@ -22,15 +22,12 @@
     <Filter Include="Fichiers d%27en-tête\Scenes">
       <UniqueIdentifier>{38e38686-eba8-4829-8314-6657949a5b37}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Fichiers sources\Scenes">
+      <UniqueIdentifier>{8ff18e0f-27b2-46db-9b48-5d8974f8c081}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DebugScene.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="PlayerInput.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="BaseScene.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="TestState.cpp">
@@ -40,7 +37,13 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="PlayScene.cpp">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Fichiers sources\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugScene.cpp">
+      <Filter>Fichiers sources\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseScene.cpp">
+      <Filter>Fichiers sources\Scenes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
