@@ -32,6 +32,12 @@ void DivingInput::Update(float dt) {
         if (currentScene) {
             const auto& allObjects = currentScene->GetGameObjects();
             float detectionThreshold = 150.0f;
+
+            // AUGMENTE CETTE VALEUR (Essaie 25.0f, 30.0f ou 40.0f selon la taille du sprite)
+            float visualYOffset = 30.0f;
+
+            float minPenetration = 0.0f;
+
             bool foundGround = false;
 
             for (GameObject* obj : allObjects) {
@@ -47,7 +53,12 @@ void DivingInput::Update(float dt) {
                         float t = (transform.pos.x - wStart.x) / (wEnd.x - wStart.x);
                         float groundY = wStart.y + t * (wEnd.y - wStart.y);
 
-                        if (transform.pos.y >= groundY && (transform.pos.y - groundY) < detectionThreshold) {
+                        // On applique le décalage pour ne pas s'enfoncer dans les sommets
+                        groundY -= visualYOffset;
+                        float penetration = transform.pos.y - groundY;
+
+                        // On autorise le joueur à toucher le sol uniquement s'il est physiquement dessus ou dedans
+                        if (penetration >= minPenetration && penetration < detectionThreshold) {
                             transform.pos.y = groundY;
                             foundGround = true;
 
