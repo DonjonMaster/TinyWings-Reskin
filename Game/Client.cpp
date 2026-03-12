@@ -19,13 +19,17 @@ void Client::ReceiveData() {
 
 	if (socket.receive(p, sIp, sP) == sf::Socket::Status::Done) {
 		int header;
-		p >> header;
+		if (!(p >> header)) return;
 
 		switch (Settings::PacketTypes(header)) {
 		case Settings::PacketTypes::NEW_CONNECTION: {
 			std::string k;
 			int num;
-			p >> num;
+			if (p >> num >> k) {
+				std::cout << "Connecté en tant que joueur " << num << " (ID: " << k << ")\n";
+				// Une fois connecté, on envoie un message de test
+				SendStringMessage("Bonjour serveur, je suis connecte !");
+			}
 			// Ajouter le joueur visuellement
 
 			break;
@@ -42,6 +46,15 @@ void Client::ReceiveData() {
 	}
 
 	p.clear();
+}
+
+void Client::SendStringMessage(const std::string& message) {
+	sf::Packet p;
+	p << static_cast<int>(Settings::PacketTypes::STRING_MESSAGE) << message;
+
+	if (socket.send(p, serverIp, serverPort) != sf::Socket::Status::Done) {
+		std::cout << "Erreur lors de l'envoi du message texte.\n";
+	}
 }
 
 void Client::SendData() {
@@ -111,27 +124,30 @@ void Client::run(){
 void Client::AttemptJoin() {
 	socket.setBlocking(false);
 	// Récupérer ce que le joueur entre comme input lors d'une connexion (dans les menus)
-	auto serverIp = sf::IpAddress::resolve(world->serverIPInput);
-	serverPort = std::stoul(world->serverPortInput);
-	// Récupérer ce que le joueur entre comme input lors d'une connexion (dans les menus)
-	port = std::stoul(world->userPortInput);
+	auto resolvedIp = sf::IpAddress::resolve(world->serverIPInput);
+	if (!resolvedIp) {
+		std::cout << "IP invalide\n";
+		return;
+	}
+	serverIp = *resolvedIp;
+	serverPort = static_cast<unsigned short>(std::stoul(world->serverPortInput));
+	port = static_cast<unsigned short>(std::stoul(world->userPortInput));
 
 	if (socket.bind(port) != sf::Socket::Status::Done) {
-		std::cout << "Impossible de lier le socket serveur au port donné : " << serverPort << std::endl;
+		std::cout << "Impossible de lier le socket au port donné : " << port << std::endl;
+		return;
 	}
 
 	sf::Packet p;
 	p << Settings::PacketTypes::NEW_CONNECTION << port;
 
-	if (socket.send(p, *serverIp, serverPort) != sf::Socket::Status::Done) {
+	if (socket.send(p, serverIp, serverPort) != sf::Socket::Status::Done) {
 		std::cout << "Impossible de se connecter au server";
 	}
 
 	p.clear();
 
-	if (socket.receive(p, serverIp, serverPort) != sf::Socket::Status::Done) {
-		std::cout << "Erreur lors de la réception des paquets";
-	}
+	ReceiveData();
 
 	// Ajouter les changements liée au player
 

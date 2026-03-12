@@ -79,7 +79,7 @@ World::World() :
 
 	serverIpText.setStyle(sf::Text::Bold);
 	serverIpText.setCharacterSize(40);
-	serverIpText.setString("Server IP: " + server.GetIp().toString());
+	serverIpText.setString("Server IP: Resolving...");
 	serverIpText.setPosition(sf::Vector2f{ 350, 315 });
 
 	hostMenuInfo.setStyle(sf::Text::Bold);
@@ -108,6 +108,7 @@ void World::update(float dt) {
             server.serverPort = std::stoul(serverPortInput);
             if (server.Init()) {
                 serverPortDisplay.setString("Server Port : " + serverPortInput);
+                serverIpText.setString("Server IP: " + server.GetIp().toString());
                 state = HOSTING;
             }
         }

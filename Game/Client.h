@@ -15,6 +15,7 @@ public :
 	Client(World*& world);
 
 	void ReceiveData();
+	void SendStringMessage(const std::string& message);
 	void SendData();
 	void disconnect();
 	// Ajouter des actions du joueur si nécessaire

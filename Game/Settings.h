@@ -5,6 +5,7 @@ namespace Settings {
 	enum PacketTypes : int {
 		NEW_CONNECTION = 1,
 		// Ajouter les actions du joueurs à prendre en compte
-		DISCONNECT = 2
+		DISCONNECT = 2,
+		STRING_MESSAGE = 3
 	};
 }

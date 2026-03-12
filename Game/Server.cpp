@@ -42,9 +42,8 @@ void Server::ReceiveData() {
 		case Settings::PacketTypes::NEW_CONNECTION: {
 			if (connections.size() == 2) {
 				std::cout << "Un joueur a essayé de se connecter. Le lobby est plein." << std::endl;
+				return;
 			}
-
-			packet >> senderPort;
 
 			Connection c;
 			c.address = *senderIp;
@@ -69,6 +68,13 @@ void Server::ReceiveData() {
 			std::cout << "Nouvelle connexion avec " << *senderIp << c.port << std::endl;
 			std::cout << "Connexions total : " << connections.size() << std::endl;
 
+			break;
+		}
+		case Settings::STRING_MESSAGE: {
+			std::string receivedMsg;
+			if (packet >> receivedMsg) {
+				std::cout << "[MESSAGE de " << senderKey << "] : " << receivedMsg << std::endl;
+			}
 			break;
 		}
 		case Settings::PacketTypes::DISCONNECT: {
