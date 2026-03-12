@@ -33,13 +33,16 @@ public:
 	// Récupère la scène du game object
 	Scene* GetScene();
 
-
+	void SetZOrder(int z) { zOrder = z; }
+	int GetZOrder() const { return zOrder; }
 
 private:
 	std::vector<Component*> components;
 	Transform transform;
 	std::string name;
 	Scene* scene;
+
+	int zOrder = 0;
 };
 
 #include "GameObject.inl"

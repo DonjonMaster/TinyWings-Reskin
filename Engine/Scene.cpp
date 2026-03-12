@@ -39,8 +39,14 @@ void Scene::Update(float dt)
 
 void Scene::Render(sf::RenderWindow* window)
 {
-	for (GameObject* gameObject : gameObjects)
-		gameObject->Render(window);
+	// Dans la fonction qui dessine la scène
+	std::sort(gameObjects.begin(), gameObjects.end(), [](GameObject* a, GameObject* b) {
+		return a->GetZOrder() < b->GetZOrder();
+		});
+
+	for (auto* obj : gameObjects) {
+		obj->Render(window);
+	}
 
 }
 
