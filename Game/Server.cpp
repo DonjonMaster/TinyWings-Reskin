@@ -78,14 +78,12 @@ void Server::ReceiveData() {
 		}
 		case Settings::PacketTypes::PLAYER_DATA: {
 			sf::Vector2f pos;
-			int score;
-			if (packet >> pos.x >> pos.y >> score) {
+			if (packet >> pos.x >> pos.y) {
 				connections[senderKey].position = pos;
-				connections[senderKey].score = score;
 
 				// Envoi aux autres joueurs
 				sf::Packet relay;
-				relay << static_cast<int>(Settings::PacketTypes::PLAYER_DATA) << senderKey << pos.x << pos.y << score;
+				relay << static_cast<int>(Settings::PacketTypes::PLAYER_DATA) << senderKey << pos.x << pos.y;
 				SendData(senderKey, relay);
 			}
 			break;

@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "Server.h"
+#include "PlayerContext.h"
 
 enum GameState {
     MAIN_MENU = 0,
@@ -14,6 +15,9 @@ enum GameState {
 class World
 {
 public:
+    PlayerContext playerContext;
+    std::map<std::string, GameObject*> remotePlayers;
+
 	World();
 	~World();
 

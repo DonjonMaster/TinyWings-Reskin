@@ -15,7 +15,6 @@ struct Connection {
 
 	// Ajouter information des joueurs et de leurs positions dans le monde (données à envoyer / recevoir)
 	sf::Vector2f position{ 0, 0 };
-	int score{ 0 };
 };
 
 class Server
