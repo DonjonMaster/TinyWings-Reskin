@@ -16,7 +16,14 @@ void PlayScene::Create()
     // le nom correspond à la fonction du .h
     hill->InitFromImage("Assets/chunk1.png", 10);
 
+    // creation d'une colline automatique
+    GameObject* h2 = CreateGameObject({ 400, -850 }, "AutoHill");
+    h2->GetTransform().scale = { 8.0f, 8.0f };
+    auto* hill2 = h2->AddComponent<HillComponent>();
+    h2->SetZOrder(0);
 
+    // le nom correspond à la fonction du .h
+    hill2->InitFromImage("Assets/chunk1.png", 10);
 
     // ici je peux créer le joueur grace au create player init dans le base scene (on peut toujours mettre les autres elements egalement)
     GameObject* player = CreatePlayer();

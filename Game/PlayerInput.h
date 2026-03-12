@@ -9,4 +9,5 @@ public:
 private:
     float GravityMultiplier = 1.0f; // Commence à x1 (Normal)
     bool wasPressedLastFrame = false;
+    bool isGrounded = false;
 };

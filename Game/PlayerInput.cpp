@@ -14,7 +14,6 @@ void DivingInput::Create() {
     owner->GetTransform().velocity = PlayerSettings::START_VELOCITY;
 
     // CRUCIAL : Place le point de collision aux PIEDS du joueur (et non au centre)
-    // C'est ça qui empêche ton bonhomme d'être à moitié dans le sol !
     owner->GetTransform().origin = { 0.5f, 1.0f };
 }
 
@@ -31,11 +30,16 @@ void DivingInput::Update(float dt) {
         GravityMultiplier = std::clamp(GravityMultiplier, 1.0f, 6.0f);
         grav->SetGravity({ 0.f, PlayerSettings::GRAVITY * GravityMultiplier });
 
-        // --- Détection du Sol (Méthode des 3 Capteurs type "Sonic") ---
+        // --- Détection du Sol (Méthode des 3 Capteurs) ---
         Scene* currentScene = owner->GetScene();
         if (currentScene) {
             const auto& allObjects = currentScene->GetGameObjects();
             float detectionThreshold = 150.0f;
+
+            // LA MAGIE EST ICI : 
+            // Si on descend (velocity.y >= 0), on a une grande marge pour attraper le sol.
+            // Si on monte (velocity.y < 0), la marge est petite pour rester collé à notre pente actuelle sans accrocher celles du dessus.
+            float dynamicMargin = (transform.velocity.y >= 0.0f) ? 40.0f : 15.0f;
 
             float centerGroundY = 999999.0f;
             float bestGroundY = 999999.0f;
@@ -43,8 +47,6 @@ void DivingInput::Update(float dt) {
             SlopeType slopeType = SlopeType::UP;
             bool foundGround = false;
 
-            // On prend un peu moins que la vraie largeur (20 au lieu de 25) 
-            // pour que les bords soient plus tolérants sur les petites bosses
             float halfWidth = 20.0f;
 
             for (GameObject* obj : allObjects) {
@@ -55,16 +57,21 @@ void DivingInput::Update(float dt) {
                     sf::Vector2f wStart = hill->GetWorldPos(seg.start);
                     sf::Vector2f wEnd = hill->GetWorldPos(seg.end);
 
-                    // 1. Capteur CENTRAL (Sert aussi à calculer l'inclinaison pour la vitesse)
+                    // 1. Capteur CENTRAL
                     if (transform.pos.x >= wStart.x && transform.pos.x <= wEnd.x) {
                         float t = (transform.pos.x - wStart.x) / (wEnd.x - wStart.x);
-                        centerGroundY = wStart.y + t * (wEnd.y - wStart.y);
+                        float y = wStart.y + t * (wEnd.y - wStart.y);
 
-                        sf::Vector2f diff = wEnd - wStart;
-                        float length = std::sqrt(diff.x * diff.x + diff.y * diff.y);
-                        slopeDir = diff / length;
-                        slopeType = seg.type;
-                        foundGround = true;
+                        if (transform.pos.y <= y + dynamicMargin) {
+                            if (y < centerGroundY) {
+                                centerGroundY = y;
+                                sf::Vector2f diff = wEnd - wStart;
+                                float length = std::sqrt(diff.x * diff.x + diff.y * diff.y);
+                                slopeDir = diff / length;
+                                slopeType = seg.type;
+                                foundGround = true;
+                            }
+                        }
                     }
 
                     // 2. Capteur PIED GAUCHE
@@ -72,7 +79,10 @@ void DivingInput::Update(float dt) {
                     if (leftX >= wStart.x && leftX <= wEnd.x) {
                         float t = (leftX - wStart.x) / (wEnd.x - wStart.x);
                         float y = wStart.y + t * (wEnd.y - wStart.y);
-                        if (y < bestGroundY) bestGroundY = y;
+
+                        if (transform.pos.y <= y + dynamicMargin) {
+                            if (y < bestGroundY) bestGroundY = y;
+                        }
                     }
 
                     // 3. Capteur PIED DROIT
@@ -80,40 +90,56 @@ void DivingInput::Update(float dt) {
                     if (rightX >= wStart.x && rightX <= wEnd.x) {
                         float t = (rightX - wStart.x) / (wEnd.x - wStart.x);
                         float y = wStart.y + t * (wEnd.y - wStart.y);
-                        if (y < bestGroundY) bestGroundY = y;
+
+                        if (transform.pos.y <= y + dynamicMargin) {
+                            if (y < bestGroundY) bestGroundY = y;
+                        }
                     }
                 }
             }
 
             // --- Résolution de la Collision ---
-            if (foundGround) {
-                // On garde le point physique le plus haut entre le centre et les pieds
-                bestGroundY = std::min(bestGroundY, centerGroundY);
+            // Variable temporaire pour savoir si on a touché le sol CETTE frame
+            bool foundGroundThisFrame = false;
 
+            // --- Résolution de la Collision ---
+            if (foundGround) {
+                bestGroundY = std::min(bestGroundY, centerGroundY);
                 float penetration = transform.pos.y - bestGroundY;
 
-                // Si le joueur est en train de toucher ou de s'enfoncer dans le sol
                 if (penetration >= 0.0f && penetration < detectionThreshold) {
 
-                    // On le pose pile sur le point le plus haut !
-                    transform.pos.y = bestGroundY;
-
-                    // --- LOGIQUE DE VITESSE ---
-                    float currentSpeed = std::sqrt(transform.velocity.x * transform.velocity.x + transform.velocity.y * transform.velocity.y);
-
-                    if (slopeType == SlopeType::DOWN) {
-                        float boost = 400.f * (GravityMultiplier / 2.0f);
-                        currentSpeed += boost * dt;
+                    // LA MAGIE ANTI-TELEPORTATION EST ICI :
+                    // Si on monte (velocity.y < 0) ET qu'on n'était pas au sol avant (!isGrounded),
+                    // c'est qu'on traverse la colline par en dessous. On l'ignore !
+                    if (transform.velocity.y < 0.0f && !isGrounded) {
+                        // On ne fait rien, laisse l'oiseau voler à travers !
                     }
                     else {
-                        currentSpeed -= 1000.f * dt;
-                        if (currentSpeed < 100.f) currentSpeed = 100.f;
-                    }
+                        // On se pose sur le sol
+                        transform.pos.y = bestGroundY;
+                        foundGroundThisFrame = true; // On confirme qu'on roule sur le sol
 
-                    transform.velocity = slopeDir * currentSpeed;
+                        // --- LOGIQUE DE VITESSE ---
+                        float currentSpeed = std::sqrt(transform.velocity.x * transform.velocity.x + transform.velocity.y * transform.velocity.y);
+
+                        if (slopeType == SlopeType::DOWN) {
+                            float boost = 400.f * (GravityMultiplier / 2.0f);
+                            currentSpeed += boost * dt;
+                        }
+                        else {
+                            currentSpeed -= 1000.f * dt;
+                            if (currentSpeed < 100.f) currentSpeed = 100.f;
+                        }
+
+                        transform.velocity = slopeDir * currentSpeed;
+                    }
                 }
             }
-        }
+
+            // On met à jour la mémoire du joueur pour la prochaine frame
+            isGrounded = foundGroundThisFrame;
+        } // Fin du "if (currentScene)"
         wasPressedLastFrame = isPressed;
     }
 }
