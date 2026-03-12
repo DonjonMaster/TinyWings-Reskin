@@ -13,5 +13,5 @@ public:
     bool enableGravity = false;
 
 private:
-    sf::Vector2f gravity = { 0.f, 981.f };
+    sf::Vector2f gravity = { 0.f, 0.f };
 };

@@ -125,12 +125,13 @@ void DivingInput::Update(float dt) {
 
                         if (slopeType == SlopeType::DOWN) {
                             float boost = 400.f * (GravityMultiplier / 2.0f);
-                            currentSpeed += boost * dt;
+                            currentSpeed += (boost * dt);
                         }
                         else {
                             currentSpeed -= 1000.f * dt;
                             if (currentSpeed < 100.f) currentSpeed = 100.f;
                         }
+
 
                         transform.velocity = slopeDir * currentSpeed;
                     }
