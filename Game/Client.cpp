@@ -123,13 +123,16 @@ void Client::run(){
 
 void Client::AttemptJoin() {
 	socket.setBlocking(false);
+
 	// Récupérer ce que le joueur entre comme input lors d'une connexion (dans les menus)
 	auto resolvedIp = sf::IpAddress::resolve(world->serverIPInput);
 	if (!resolvedIp) {
 		std::cout << "IP invalide\n";
 		return;
 	}
+
 	serverIp = *resolvedIp;
+
 	serverPort = static_cast<unsigned short>(std::stoul(world->serverPortInput));
 	port = static_cast<unsigned short>(std::stoul(world->userPortInput));
 
@@ -142,7 +145,10 @@ void Client::AttemptJoin() {
 	p << Settings::PacketTypes::NEW_CONNECTION << port;
 
 	if (socket.send(p, serverIp, serverPort) != sf::Socket::Status::Done) {
-		std::cout << "Impossible de se connecter au server";
+		std::cout << "Impossible de se connecter au server" << std::endl;
+	}
+	else {
+		std::cout << "Connexion avec le serveur établie" << std::endl;
 	}
 
 	p.clear();
