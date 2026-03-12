@@ -98,7 +98,7 @@ void DivingInput::Update(float dt) {
 
                 if (bestSlopeType == SlopeType::DOWN) {
                     // En descente : on accélère
-                    float boost = 400.f * (GravityMultiplier / 1.5f);
+                    float boost = isPressed ? (600.f * (GravityMultiplier / 1.5f)) : (400.f * (GravityMultiplier / 1.5f));
                     currentSpeed += boost * dt;
                 }
                 else {

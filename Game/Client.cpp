@@ -30,13 +30,27 @@ void Client::ReceiveData() {
 				// Une fois connecté, on envoie un message de test
 				SendStringMessage("Bonjour serveur, je suis connecte !");
 			}
-			// Ajouter le joueur visuellement
 
 			break;
 		}
 		case Settings::PacketTypes::START_GAME: {
 			std::cout << "Le serveur à lancé la partie" << std::endl;
 			world->state = GameState::PLAYING;
+			break;
+		}
+		case Settings::PacketTypes::PLAYER_DATA: {
+			std::string id;
+			float x, y;
+			if (p >> id >> x >> y) {
+				if (world->remotePlayers.count(id)) {
+					world->remotePlayers[id]->GetTransform().pos = { x, y };
+				}
+				else {
+					// On créer le fantome
+					/*auto* sceneModule = Engine::GetInstance()->GetModuleManager()->GetModule<SceneModule>();
+					sceneModule->*/
+				}
+			}
 			break;
 		}
 		case Settings::PacketTypes::DISCONNECT: {
@@ -67,10 +81,9 @@ void Client::SendData() {
 	sf::Packet p;
 	p << static_cast<int>(Settings::PacketTypes::PLAYER_DATA);
 
-	sf::Vector2f currentPos = { 100.f, 200.f };
-	int currentScore = 10;
+	auto& transform = world->playerContext.player->GetTransform();
 
-	p << currentPos.x << currentPos.y << currentScore;
+	p << transform.pos.x << transform.pos.y;
 	// Ajouter l'envoi de la position
 	if (socket.send(p, serverIp, serverPort) == sf::Socket::Status::Done) {
 

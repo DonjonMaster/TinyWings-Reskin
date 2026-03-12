@@ -6,6 +6,8 @@
 #include <string>
 
 #include "settings.h"
+#include "SceneModule.h"
+
 
 class World;
 

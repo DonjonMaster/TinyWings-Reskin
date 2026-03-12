@@ -10,7 +10,7 @@
 // PLAYER SETTINGS
 namespace PlayerSettings {
     inline const sf::Vector2f START_VELOCITY = { 200.f, 0.f };
-    inline const float GRAVITY = 500.f;
+    inline const float GRAVITY = 300.f;
     inline const float DIVE_FORCE = 9999.f;
 }
 
