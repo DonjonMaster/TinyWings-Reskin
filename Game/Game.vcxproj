@@ -131,8 +131,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Background.cpp" />
     <ClCompile Include="BaseScene.cpp" />
     <ClCompile Include="DebugScene.cpp" />
+    <ClCompile Include="PlayScene.cpp" />
     <ClCompile Include="TestState.cpp" />
     <ClCompile Include="PlayerInput.cpp" />
   </ItemGroup>
@@ -142,7 +144,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Background.h" />
     <ClInclude Include="BaseScene.h" />
+    <ClInclude Include="PlayScene.h" />
     <ClInclude Include="TestState.h" />
     <ClInclude Include="PlayerContext.h" />
     <ClInclude Include="PlayerInput.h" />

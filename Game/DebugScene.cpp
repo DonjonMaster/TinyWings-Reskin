@@ -12,65 +12,23 @@
 #include "InputHandler.h"
 #include "PlayerContext.h"
 #include "TestState.h"
+#include "PlayScene.h"
 #include <iostream>
 
+#define DEBUG
 
-class TestComponent : public Component {
-public:
-    void Render(sf::RenderWindow* window) override {
-        // On dessine un énorme carré rouge pour être SUR de le voir
-        sf::RectangleShape rect(sf::Vector2f(10, 10));
-        rect.setFillColor(sf::Color::Red);
-        if (owner) {
-            rect.setPosition(owner->GetTransform().pos);
-        }
-        window->draw(rect);
-    }
-};
-
-class TestScene : public BaseScene {
-public:
-
-    void Create() override
-    {
-        // ici je peux créer le joueur grace au create player init dans le base scene (on peut toujours mettre les autres elements egalement)
-        GameObject* player = CreatePlayer();
-        player->AddComponent<TestComponent>();
-
-        SpriteRendererComponent* playerSprite = player->GetComponent<SpriteRendererComponent>();
-
-        // creation d'une colline automatique
-        GameObject* h = CreateGameObject({ 200, 500 }, "AutoHill");
-        auto* hill = h->AddComponent<HillComponent>();
-
-        // le nom correspond à la fonction du .h
-        hill->InitFromImage("Assets/nuage1.png", 10);
-
-
-        GameObject* h2 = CreateGameObject({ -330, 450}, "AutoHill2");
-        auto* hill2 = h2->AddComponent<HillComponent>();
-        hill2->InitFromImage("Assets/nuage2.png", 10);
-
-        GameObject* h3 = CreateGameObject({ 500, 350 }, "AutoHill3");
-        auto* hill3 = h3->AddComponent<HillComponent>();
-        hill3->InitFromImage("Assets/nuage3.png", 10);
-
-
-
-
-        // FSM du Player
-        auto playerFSM = player->AddComponent<FSMComponent<PlayerContext>>();
-        auto& machine = playerFSM->fsm;
-        auto& ctx = playerFSM->context;
-
-        ctx.player = player;
-        ctx.playerSprite = playerSprite;
-
-        TestState* test = machine.CreateState<TestState>();
-
-        machine.Init(test, ctx);
-    }
-};
+//class TestComponent : public Component {
+//public:
+//    void Render(sf::RenderWindow* window) override {
+//        // On dessine un énorme carré rouge pour être SUR de le voir
+//        sf::RectangleShape rect(sf::Vector2f(10, 10));
+//        rect.setFillColor(sf::Color::Red);
+//        if (owner) {
+//            rect.setPosition(owner->GetTransform().pos);
+//        }
+//        window->draw(rect);
+//    }
+//};
 
 int main() {
     // init necessessaire
@@ -80,12 +38,17 @@ int main() {
     // application de la scene
     SceneModule* sm = engine->GetModuleManager()->GetModule<SceneModule>();
     if (sm) {
-        sm->RegisterScene<TestScene>("Test");
-        sm->SetScene("Test");
+        sm->RegisterScene<PlayScene>("Play");
+        sm->SetScene("Play");
+#ifdef DEBUG
         std::cout << "Scene enregistree et lancee." << std::endl;
+#endif // DEBUG
+
     }
     else {
+#ifdef DEBUG
         std::cout << "ERREUR : SceneModule introuvable !" << std::endl;
+#endif // DEBUG
     }
 
     engine->Run();

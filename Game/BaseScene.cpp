@@ -1,6 +1,4 @@
 #include "BaseScene.h"
-#include "InputHandler.h" // Ajoute ces includes
-#include "PlayerInput.h"    
 
 GameObject* BaseScene::CreatePlayer()
 {

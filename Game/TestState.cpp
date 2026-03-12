@@ -1,11 +1,18 @@
 #include "TestState.h"
 #include <iostream>
+
+#define DEBUG
 void TestState::Enter(PlayerContext& _context)
 {
-	std::cout << "Enter dans le idle" << std::endl;
+#ifdef DEBUG
+	std::cout << "Enter dans le testState" << std::endl;
+#endif // DEBUG
 	if (_context.playerSprite)
 	{
-		std::cout << "Set anim dans le idle" << std::endl;
+#ifdef DEBUG
+		std::cout << "Set anim dans le testState" << std::endl;
+#endif // DEBUG
+
 		_context.playerSprite->SetAnimationRule(SpriteAnimationRule(4, { 0, 0 }, { 50, 50 }));
 	}
 }
