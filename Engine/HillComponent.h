@@ -10,7 +10,7 @@ public:
     HillComponent() {}
 
     void Init(sf::Vector2f start, sf::Vector2f end, SlopeType type);
-    void InitFromImage(const std::string& texturePath, int precision = 10);
+    void InitFromImage(const std::string& texturePath, int precision = 2);
 
     void Render(sf::RenderWindow* window) override;
 
