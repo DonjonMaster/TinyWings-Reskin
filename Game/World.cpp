@@ -131,6 +131,7 @@ void World::update(float dt) {
     }
 }
 
+
 void World::render() {
     window.clear();
 
@@ -256,7 +257,7 @@ World::UserInputWindow::UserInputWindow() {
 	goBackButton.setFillColor(darkGreen);
 
     startGameButton.setSize(sf::Vector2f{ 200, 50 });
-    startGameButton.setPosition(sf::Vector2f{ 500, 575 });
+    startGameButton.setPosition(sf::Vector2f{ 500, 500 });
     startGameButton.setFillColor(sf::Color::Green);
 }
 
@@ -393,6 +394,7 @@ void World::UserInputWindow::update(sf::RenderWindow& w, GameState g) {
             if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
                 attemptStartGame = true;
                 currentSelected = none;
+                w.close();
             }
         }
         else {
@@ -401,6 +403,5 @@ void World::UserInputWindow::update(sf::RenderWindow& w, GameState g) {
         break;
     default:
         break;
-    }
-
+    }    
 }

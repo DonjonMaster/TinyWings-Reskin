@@ -22,11 +22,14 @@
 #define DEBUG
 
 int main() {
+    World* w = new World{};
+    Client c{ w };
+    c.run();
+
     // init necessessaire
     Engine* engine = Engine::GetInstance();
     engine->Initialize();
 
-    /*World* w = new World{};*/
 
     // application de la scene
     SceneModule* sm = engine->GetModuleManager()->GetModule<SceneModule>();
@@ -43,9 +46,6 @@ int main() {
         std::cout << "ERREUR : SceneModule introuvable !" << std::endl;
 #endif // DEBUG
     }
-
-    //Client c{ w };
-    //c.run();
 
     engine->Run();
     return 0;

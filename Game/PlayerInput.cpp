@@ -7,13 +7,13 @@
 #include <Scene.h>           
 #include <iostream>
 #include <algorithm>
-#include <vector>          
+#include <cmath>
 
 void DivingInput::Create() {
     GravityMultiplier = 1.0f;
     owner->GetTransform().velocity = PlayerSettings::START_VELOCITY;
 
-    // CRUCIAL : Place le point de collision aux PIEDS du joueur (et non au centre)
+    // CRUCIAL : Point de collision aux pieds
     owner->GetTransform().origin = { 0.5f, 1.0f };
 }
 
@@ -25,29 +25,33 @@ void DivingInput::Update(float dt) {
     if (input && grav) {
         // --- Gestion de la Gravité ---
         bool isPressed = input->IsActionPressed();
+
+        // Le bouton augmente juste la gravité (la force qui tire vers le bas)
         if (isPressed) GravityMultiplier += 10.0f * dt;
-        else if (GravityMultiplier > 1.0f) GravityMultiplier -= 1.5f * dt;
+        else if (GravityMultiplier > 1.0f) GravityMultiplier -= 2.0f * dt;
+
         GravityMultiplier = std::clamp(GravityMultiplier, 1.0f, 6.0f);
         grav->SetGravity({ 0.f, PlayerSettings::GRAVITY * GravityMultiplier });
 
-        // --- Détection du Sol (Méthode des 3 Capteurs) ---
+        // --- Détection du Sol ---
         Scene* currentScene = owner->GetScene();
         if (currentScene) {
             const auto& allObjects = currentScene->GetGameObjects();
-            float detectionThreshold = 150.0f;
 
-            // LA MAGIE EST ICI : 
-            // Si on descend (velocity.y >= 0), on a une grande marge pour attraper le sol.
-            // Si on monte (velocity.y < 0), la marge est petite pour rester collé à notre pente actuelle sans accrocher celles du dessus.
-            float dynamicMargin = (transform.velocity.y >= 0.0f) ? 40.0f : 15.0f;
+            float hillThickness = 15.0f;
 
-            float centerGroundY = 999999.0f;
+            // CORRECTION ICI : L'aimantation ne dépend QUE de la chute.
+            // Le bouton 'isPressed' n'influence plus l'aimantation.
+            // Si l'oiseau monte (velocity.y < 0), la marge est de 0. L'inertie l'emportera au sommet !
+            float catchMargin = (transform.velocity.y >= 0.0f) ? 35.0f : 0.0f;
+
             float bestGroundY = 999999.0f;
-            sf::Vector2f slopeDir;
-            SlopeType slopeType = SlopeType::UP;
+            sf::Vector2f bestSlopeDir;
+            SlopeType bestSlopeType = SlopeType::UP;
             bool foundGround = false;
 
-            float halfWidth = 20.0f;
+            float halfWidth = 15.0f;
+            float checkXs[3] = { transform.pos.x, transform.pos.x - halfWidth, transform.pos.x + halfWidth };
 
             for (GameObject* obj : allObjects) {
                 auto* hill = obj->GetComponent<HillComponent>();
@@ -57,90 +61,61 @@ void DivingInput::Update(float dt) {
                     sf::Vector2f wStart = hill->GetWorldPos(seg.start);
                     sf::Vector2f wEnd = hill->GetWorldPos(seg.end);
 
-                    // 1. Capteur CENTRAL
-                    if (transform.pos.x >= wStart.x && transform.pos.x <= wEnd.x) {
-                        float t = (transform.pos.x - wStart.x) / (wEnd.x - wStart.x);
-                        float y = wStart.y + t * (wEnd.y - wStart.y);
+                    for (int i = 0; i < 3; ++i) {
+                        float cx = checkXs[i];
 
-                        if (transform.pos.y <= y + dynamicMargin) {
-                            if (y < centerGroundY) {
-                                centerGroundY = y;
-                                sf::Vector2f diff = wEnd - wStart;
-                                float length = std::sqrt(diff.x * diff.x + diff.y * diff.y);
-                                slopeDir = diff / length;
-                                slopeType = seg.type;
-                                foundGround = true;
+                        if (cx >= wStart.x && cx <= wEnd.x) {
+                            float t = (cx - wStart.x) / (wEnd.x - wStart.x);
+                            float surfaceY = wStart.y + t * (wEnd.y - wStart.y);
+
+                            float penetration = transform.pos.y - surfaceY;
+
+                            if (penetration >= -catchMargin && penetration <= hillThickness) {
+                                if (surfaceY < bestGroundY) {
+                                    bestGroundY = surfaceY;
+                                    sf::Vector2f diff = wEnd - wStart;
+                                    float length = std::sqrt(diff.x * diff.x + diff.y * diff.y);
+                                    bestSlopeDir = diff / length;
+                                    bestSlopeType = seg.type;
+                                    foundGround = true;
+                                }
                             }
                         }
                     }
-
-                    // 2. Capteur PIED GAUCHE
-                    float leftX = transform.pos.x - halfWidth;
-                    if (leftX >= wStart.x && leftX <= wEnd.x) {
-                        float t = (leftX - wStart.x) / (wEnd.x - wStart.x);
-                        float y = wStart.y + t * (wEnd.y - wStart.y);
-
-                        if (transform.pos.y <= y + dynamicMargin) {
-                            if (y < bestGroundY) bestGroundY = y;
-                        }
-                    }
-
-                    // 3. Capteur PIED DROIT
-                    float rightX = transform.pos.x + halfWidth;
-                    if (rightX >= wStart.x && rightX <= wEnd.x) {
-                        float t = (rightX - wStart.x) / (wEnd.x - wStart.x);
-                        float y = wStart.y + t * (wEnd.y - wStart.y);
-
-                        if (transform.pos.y <= y + dynamicMargin) {
-                            if (y < bestGroundY) bestGroundY = y;
-                        }
-                    }
                 }
             }
 
             // --- Résolution de la Collision ---
-            // Variable temporaire pour savoir si on a touché le sol CETTE frame
             bool foundGroundThisFrame = false;
 
-            // --- Résolution de la Collision ---
             if (foundGround) {
-                bestGroundY = std::min(bestGroundY, centerGroundY);
-                float penetration = transform.pos.y - bestGroundY;
+                // On s'aligne sur la pente
+                transform.pos.y = bestGroundY;
+                foundGroundThisFrame = true;
 
-                if (penetration >= 0.0f && penetration < detectionThreshold) {
+                // --- LOGIQUE DE VITESSE (AVEC PÉNALITÉ DE MAUVAIS TIMING) ---
+                float currentSpeed = std::sqrt(transform.velocity.x * transform.velocity.x + transform.velocity.y * transform.velocity.y);
 
-                    // LA MAGIE ANTI-TELEPORTATION EST ICI :
-                    // Si on monte (velocity.y < 0) ET qu'on n'était pas au sol avant (!isGrounded),
-                    // c'est qu'on traverse la colline par en dessous. On l'ignore !
-                    if (transform.velocity.y < 0.0f && !isGrounded) {
-                        // On ne fait rien, laisse l'oiseau voler à travers !
-                    }
-                    else {
-                        // On se pose sur le sol
-                        transform.pos.y = bestGroundY;
-                        foundGroundThisFrame = true; // On confirme qu'on roule sur le sol
-
-                        // --- LOGIQUE DE VITESSE ---
-                        float currentSpeed = std::sqrt(transform.velocity.x * transform.velocity.x + transform.velocity.y * transform.velocity.y);
-
-                        if (slopeType == SlopeType::DOWN) {
-                            float boost = 400.f * (GravityMultiplier / 2.0f);
-                            currentSpeed += (boost * dt);
-                        }
-                        else {
-                            currentSpeed -= 1000.f * dt;
-                            if (currentSpeed < 100.f) currentSpeed = 100.f;
-                        }
-
-
-                        transform.velocity = slopeDir * currentSpeed;
-                    }
+                if (bestSlopeType == SlopeType::DOWN) {
+                    // En descente : on accélère
+                    float boost = 400.f * (GravityMultiplier / 1.5f);
+                    currentSpeed += boost * dt;
                 }
+                else {
+                    // En montée :
+                    // Si le joueur maintient DIVE en montée = Grosse pénalité de vitesse (comme Tiny Wings)
+                    // Si le joueur relâche en montée = Freinage léger normal
+                    float friction = isPressed ? 1200.f : 700.f;
+                    currentSpeed -= friction * dt;
+
+                    if (currentSpeed < 200.f) currentSpeed = 200.f; // Vitesse minimum
+                }
+
+                transform.velocity = bestSlopeDir * currentSpeed;
             }
 
-            // On met à jour la mémoire du joueur pour la prochaine frame
             isGrounded = foundGroundThisFrame;
-        } // Fin du "if (currentScene)"
+        }
         wasPressedLastFrame = isPressed;
     }
 }

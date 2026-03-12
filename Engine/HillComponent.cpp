@@ -1,5 +1,6 @@
 #include "HillComponent.h"
 #include "GameObject.h"
+#include <cmath> 
 
 void HillComponent::Init(sf::Vector2f start, sf::Vector2f end, SlopeType type) {
     Segment seg;
@@ -62,25 +63,57 @@ sf::Vector2f HillComponent::GetWorldPos(sf::Vector2f localPos) const {
     return owner->GetTransform().pos + scaledLocalPos;
 }
 
+
 void HillComponent::Render(sf::RenderWindow* window) {
     if (!owner) return;
 
     // Si on a une image et que le sprite est bien initialisé
     if (hasImage && sprite) {
         sprite->setPosition(owner->GetTransform().pos);
-        
-        // AJOUT : On étire l'image selon le scale défini dans le Transform
         sprite->setScale(owner->GetTransform().scale);
-        
         window->draw(*sprite);
     }
+
+    // --- PARAMÈTRES DE LA LIGNE ---
+    float thickness = 8.0f; // Épaisseur totale de la ligne
+    float radius = thickness / 2.0f;
+
+    // On prépare un cercle qui servira de "jointure" pour boucher les trous
+    // 12 points de précision suffisent pour un petit cercle
+    sf::CircleShape joint(radius, 12);
+    joint.setOrigin({ radius, radius }); // On centre le cercle sur lui-même
 
     for (const auto& seg : segments) {
         sf::Vector2f wStart = GetWorldPos(seg.start);
         sf::Vector2f wEnd = GetWorldPos(seg.end);
         sf::Color color = (seg.type == SlopeType::UP) ? sf::Color::Red : sf::Color::Blue;
 
-        sf::Vertex line[] = { sf::Vertex(wStart, color), sf::Vertex(wEnd, color) };
-        window->draw(line, 2, sf::PrimitiveType::Lines);
+        sf::Vector2f dir = wEnd - wStart;
+        float length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+
+        if (length > 0.0f) {
+            // Calcul du rectangle (comme avant)
+            sf::Vector2f normal(-dir.y / length, dir.x / length);
+            sf::Vector2f offset = normal * radius;
+
+            sf::Vertex line[] = {
+                sf::Vertex(wStart + offset, color),
+                sf::Vertex(wStart - offset, color),
+                sf::Vertex(wEnd + offset, color),
+                sf::Vertex(wEnd - offset, color)
+            };
+
+            // 1. On dessine le segment (le trait)
+            window->draw(line, 4, sf::PrimitiveType::TriangleStrip);
+
+            // 2. On dessine un cercle au début et à la fin pour arrondir les angles !
+            joint.setFillColor(color);
+
+            joint.setPosition(wStart);
+            window->draw(joint);
+
+            joint.setPosition(wEnd);
+            window->draw(joint);
+        }
     }
 }
