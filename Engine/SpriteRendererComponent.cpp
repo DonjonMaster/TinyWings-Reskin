@@ -54,3 +54,8 @@ void SpriteRendererComponent::SetAnimationRule(const SpriteAnimationRule& animat
 	this->elapsedAnimationTime = 0.f;
 
 }
+
+sf::Sprite* SpriteRendererComponent::GetSprite()
+{ 
+	return sprite;
+}

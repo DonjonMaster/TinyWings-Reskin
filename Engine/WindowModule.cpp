@@ -3,7 +3,7 @@
 
 void WindowModule::Create()
 {
-    window = new sf::RenderWindow(sf::VideoMode({ 1280, 720 }), "Tiny wings - Reskin");
+    window = new sf::RenderWindow(sf::VideoMode({ 1280, 720 }), "Run Guru Run!");
     /*sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
     window = new sf::RenderWindow(desktop, "Tiny wings - Reskin", sf::State::Windowed);*/
 }

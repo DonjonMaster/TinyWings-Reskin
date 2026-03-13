@@ -17,7 +17,7 @@ void BackgroundScroller::PreloadChunks()
         auto layer = std::make_unique<Layer>();
         layer->textures.resize(1);
 
-        std::string path = "Assets/AssetsBackground/origbig.png";
+        std::string path = "Assets/Backgrounds/TestBackground.png";
         if (!layer->textures[0].loadFromFile(path))
         {
             std::cerr << "ERREUR : Impossible de charger " << path << std::endl;

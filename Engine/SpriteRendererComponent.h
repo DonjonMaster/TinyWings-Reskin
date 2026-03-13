@@ -24,5 +24,7 @@ public:
 	bool SetIsVisible(bool isVisible);
 
 	void SetAnimationRule(const SpriteAnimationRule& animationRule);
+
+	sf::Sprite* GetSprite();
 };
 

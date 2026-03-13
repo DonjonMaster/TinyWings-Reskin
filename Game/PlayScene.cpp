@@ -27,7 +27,6 @@ void PlayScene::Create()
     GameObject* player = CreatePlayer();
     player->SetZOrder(10);
     player->GetTransform().scale = { 1.0f, 1.0f };
-    //player->AddComponent<TestComponent>();
 
     SpriteRendererComponent* playerSprite = player->GetComponent<SpriteRendererComponent>();
 
