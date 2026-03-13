@@ -36,6 +36,7 @@ int main() {
     if (sm) {
         sm->RegisterScene<PlayScene>("Play");
         sm->SetScene("Play");
+
 #ifdef DEBUG
         std::cout << "Scene enregistree et lancee." << std::endl;
 #endif // DEBUG

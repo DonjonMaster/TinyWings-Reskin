@@ -1,6 +1,4 @@
 #include "SceneModule.h"
-#include "Engine.h"
-#include "ModuleManager.h"
 
 void SceneModule::Create()
 {
@@ -45,9 +43,29 @@ void SceneModule::SetScene(std::string name)
 
 	sceneStack.clear();
 	Scene* scene = sceneConstructorsMap[name]();
+
+	scene->SetName(name); // applique un nom a la scene
 	scene->Create();
 	sceneStack.push_back(scene);
 
+}
+
+Scene* SceneModule::GetCurrentScene()
+{
+	if (sceneStack.empty()) return nullptr;
+	return sceneStack.back();
+}
+
+Scene* SceneModule::GetSceneWithName(std::string name)
+{
+	for (Scene* scene : sceneStack)
+	{
+		if (scene->GetName() == name)
+		{
+			return scene;
+		}
+	}
+	return nullptr;
 }
 
 void SceneModule::PushScene(std::string name)

@@ -21,6 +21,12 @@ public:
 
 	const std::vector<GameObject*>& GetGameObjects() const { return gameObjects; }
 
+	void SetName(std::string _name) { name = _name; }
+	std::string GetName() const { return name; }
+
+protected:
+	std::string name;
+
 private:
 	std::vector<GameObject*> gameObjects;
 	std::vector<GameObject*> gameObjectsToDelete;

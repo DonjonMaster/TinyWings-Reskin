@@ -3,6 +3,8 @@
 #include "Module.h"
 #include "Scene.h"
 #include "WindowModule.h"
+#include "Engine.h"
+#include "ModuleManager.h"
 
 class SceneModule : public Module
 {
@@ -15,6 +17,10 @@ public:
 
 	// Applique une scène (et supprime ceux présent) dans la scene stack
 	void SetScene(std::string name);
+
+	// get la scene
+	Scene* GetCurrentScene();
+	Scene* GetSceneWithName(std::string name);
 
 	// Push une scène dans la scene stack
 	void PushScene(std::string name);
