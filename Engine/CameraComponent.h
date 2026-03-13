@@ -11,7 +11,7 @@ private:
     float smoothSpeed = 5.0f;
 
     // --- NOUVELLES VARIABLES POUR LE ZOOM ---
-    float currentZoom = 1.0f;      // Le niveau de zoom actuel
+    float currentZoom = 1.0f;      // zoom
     float zoomSpeed = 2.0f;        // Vitesse de transition du zoom (plus lent que la caméra pour un effet dramatique)
     float baseGroundY = 400.0f;    // L'altitude "de base" où le zoom est normal (1.0x)
     float maxZoom = 2.5f;          // Limite maximum du dézoom pour ne pas voir tout le niveau
@@ -27,9 +27,9 @@ public:
             // Position de notre joueur
             sf::Vector2f playerPos = owner->GetTransform().pos;
 
-            // ----------------------------------------------------
+            
             // 1. GESTION DU ZOOM DYNAMIQUE
-            // ----------------------------------------------------
+            
             // Calcul de l'altitude : "baseGroundY - playerPos.y"
             // Plus on monte (playerPos.y diminue), plus l'altitude est grande.
             float altitude = baseGroundY - playerPos.y;
@@ -49,9 +49,9 @@ public:
             // (1280x720 est la taille de base définie dans ton WindowModule)
             view.setSize(sf::Vector2f(1280.f * currentZoom, 720.f * currentZoom));
 
-            // ----------------------------------------------------
+            
             // 2. GESTION DE LA POSITION (SUIVI DU JOUEUR)
-            // ----------------------------------------------------
+            
             // On ajuste le décalage pour que le joueur reste au quart gauche, 
             // même quand on dézoome (la taille de la vue change !)
             float offsetX = view.getSize().x / 4.0f;

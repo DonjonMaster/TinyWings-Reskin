@@ -54,3 +54,20 @@ void SpriteRendererComponent::SetAnimationRule(const SpriteAnimationRule& animat
 	this->elapsedAnimationTime = 0.f;
 
 }
+
+void SpriteRendererComponent::SetTexture(std::string path)
+{
+	auto resModule = Engine::GetModuleManager()->GetModule<ResourceModule>();
+	if (resModule) {
+		sf::Texture& tex = resModule->GetTexture(path);
+		if (sprite) {
+			sprite->setTexture(tex, true); // true redimensionne le sprite à la taille de la texture
+		}
+		else {
+			sprite = new sf::Sprite(tex);
+		}
+	}
+	else {
+		std::cout << "ERREUR : ResourceModule introuvable !" << std::endl;
+	}
+}

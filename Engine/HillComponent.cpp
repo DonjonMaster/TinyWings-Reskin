@@ -11,41 +11,76 @@ void HillComponent::Init(sf::Vector2f start, sf::Vector2f end, SlopeType type) {
     hasImage = false;
 }
 
+// Fonction utilitaire Catmull-Rom
+sf::Vector2f GetCatmullRomPosition(float t, sf::Vector2f p0, sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f p3) {
+    float t2 = t * t;
+    float t3 = t2 * t;
+
+    float x = 0.5f * ((2.0f * p1.x) +
+        (-p0.x + p2.x) * t +
+        (2.0f * p0.x - 5.0f * p1.x + 4.0f * p2.x - p3.x) * t2 +
+        (-p0.x + 3.0f * p1.x - 3.0f * p2.x + p3.x) * t3);
+
+    float y = 0.5f * ((2.0f * p1.y) +
+        (-p0.y + p2.y) * t +
+        (2.0f * p0.y - 5.0f * p1.y + 4.0f * p2.y - p3.y) * t2 +
+        (-p0.y + 3.0f * p1.y - 3.0f * p2.y + p3.y) * t3);
+
+    return { x, y };
+}
+
 void HillComponent::InitFromImage(const std::string& texturePath, int precision) {
     sf::Image image;
+    if (!image.loadFromFile(texturePath)) return;
+    if (!texture->loadFromImage(image)) return;
 
-    // on vérifie le chargement de l'image (nodiscard)
-    if (!image.loadFromFile(texturePath)) {
-        return;
-    }
-
-    // On vérifie le chargement de la texture (nodiscard)
-    if (!texture->loadFromImage(image)) {
-        return;
-    }
-
-    // creation du sprite 
     sprite = std::make_unique<sf::Sprite>(*texture);
     hasImage = true;
 
     sf::Vector2u size = image.getSize();
-    std::vector<sf::Vector2f> points;
+    std::vector<sf::Vector2f> rawPoints;
 
+    // --- 1. Extraction des points de contrôle ---
     for (unsigned int x = 0; x < size.x; x += precision) {
         for (unsigned int y = 0; y < size.y; ++y) {
-            // Lecture des pixels compatibles SFML 3.0
             if (image.getPixel(sf::Vector2u{ x, y }).a > 128) {
-                points.push_back(sf::Vector2f((float)x, (float)y));
+                rawPoints.push_back({ static_cast<float>(x), static_cast<float>(y) });
                 break;
             }
         }
     }
 
+    if (rawPoints.size() < 2) return;
+
+    // Duplication des extrémités pour fermer la spline
+    std::vector<sf::Vector2f> controlPoints = rawPoints;
+    controlPoints.insert(controlPoints.begin(), controlPoints.front());
+    controlPoints.push_back(controlPoints.back());
+
+    // --- 2. Génération des segments (Spline) ---
+    std::vector<sf::Vector2f> curvePoints;
+    int steps = 5;
+
+    for (size_t i = 1; i < controlPoints.size() - 2; ++i) {
+        for (int s = 0; s < steps; ++s) {
+            float t = static_cast<float>(s) / static_cast<float>(steps);
+            curvePoints.push_back(GetCatmullRomPosition(
+                t,
+                controlPoints[i - 1],
+                controlPoints[i],
+                controlPoints[i + 1],
+                controlPoints[i + 2]
+            ));
+        }
+    }
+    curvePoints.push_back(rawPoints.back());
+
+    // --- 3. Création des segments finaux ---
     segments.clear();
-    for (size_t i = 0; i < points.size() - 1; ++i) {
+    for (size_t i = 0; i < curvePoints.size() - 1; ++i) {
         Segment seg;
-        seg.start = points[i];
-        seg.end = points[i + 1];
+        seg.start = curvePoints[i];
+        seg.end = curvePoints[i + 1];
         seg.type = (seg.end.y < seg.start.y) ? SlopeType::UP : SlopeType::DOWN;
         segments.push_back(seg);
     }

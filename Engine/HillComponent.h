@@ -8,6 +8,7 @@
 class HillComponent : public Component {
 public:
     HillComponent() {}
+    bool isOneWay = false;
 
     void Init(sf::Vector2f start, sf::Vector2f end, SlopeType type);
     void InitFromImage(const std::string& texturePath, int precision = 1);
