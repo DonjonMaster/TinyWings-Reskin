@@ -30,7 +30,6 @@ int main() {
     Engine* engine = Engine::GetInstance();
     engine->Initialize();
 
-
     // application de la scene
     SceneModule* sm = engine->GetModuleManager()->GetModule<SceneModule>();
     if (sm) {

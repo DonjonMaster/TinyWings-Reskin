@@ -29,6 +29,7 @@ void Server::ReceiveData() {
 	unsigned short senderPort;
 	int header;
 
+
 	packet.clear();
 
 	if (serverSocket.receive(packet, senderIp, senderPort) == sf::Socket::Status::Done) {
@@ -80,6 +81,7 @@ void Server::ReceiveData() {
 			sf::Vector2f pos;
 			if (packet >> pos.x >> pos.y) {
 				connections[senderKey].position = pos;
+				scene->UpdatePos(pos);
 
 				// Envoi aux autres joueurs
 				sf::Packet relay;

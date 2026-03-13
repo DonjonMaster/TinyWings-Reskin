@@ -7,6 +7,8 @@
 
 #include "settings.h"
 
+#include "Scene.h"
+
 struct Connection {
 	sf::IpAddress address{ sf::IpAddress::Any };
 	unsigned short port{ 0 };
@@ -40,5 +42,7 @@ private:
 	sf::UdpSocket serverSocket;
 
 	std::unordered_map<std::string, Connection> connections;
+
+	Scene* scene;
 };
 

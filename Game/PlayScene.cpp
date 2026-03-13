@@ -26,7 +26,9 @@ void PlayScene::Create()
     // ici je peux créer le joueur grace au create player init dans le base scene (on peut toujours mettre les autres elements egalement)
     GameObject* player = CreatePlayer();
     player->SetZOrder(10);
-    player->GetTransform().scale = { 1.0f, 1.0f };
+
+    GameObject* ghost = CreateGhost();
+    ghost->SetZOrder(10);
 
     SpriteRendererComponent* playerSprite = player->GetComponent<SpriteRendererComponent>();
 

@@ -18,6 +18,7 @@ void DivingInput::Create() {
 }
 
 void DivingInput::Update(float dt) {
+
     auto* input = owner->GetComponent<InputHandler>();
     auto* grav = owner->GetComponent<GravityComponent>();
     auto& transform = owner->GetTransform();
@@ -98,14 +99,14 @@ void DivingInput::Update(float dt) {
 
                 if (bestSlopeType == SlopeType::DOWN) {
                     // En descente : on accélère
-                    float boost = isPressed ? (600.f * (GravityMultiplier / 1.5f)) : (400.f * (GravityMultiplier / 1.5f));
+                    float boost = isPressed ? (500.f * (GravityMultiplier / 1.5f)) : (300.f * (GravityMultiplier / 1.5f));
                     currentSpeed += boost * dt;
                 }
                 else {
                     // En montée :
                     // Si le joueur maintient DIVE en montée = Grosse pénalité de vitesse (comme Tiny Wings)
                     // Si le joueur relâche en montée = Freinage léger normal
-                    float friction = isPressed ? 1200.f : 700.f;
+                    float friction = isPressed ? 1100.f : 600.f;
                     currentSpeed -= friction * dt;
 
                     if (currentSpeed < 200.f) currentSpeed = 200.f; // Vitesse minimum
@@ -119,3 +120,4 @@ void DivingInput::Update(float dt) {
         wasPressedLastFrame = isPressed;
     }
 }
+

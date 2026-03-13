@@ -9,6 +9,7 @@ public:
 	virtual void Update(float dt);
 	virtual void Render(sf::RenderWindow* window);
 	virtual void Destroy();
+	virtual void UpdatePos(sf::Vector2f pos);
 
 	// Créer un game object dans la scène
 	GameObject* CreateGameObject(sf::Vector2f pos, std::string name);
@@ -30,4 +31,6 @@ protected:
 private:
 	std::vector<GameObject*> gameObjects;
 	std::vector<GameObject*> gameObjectsToDelete;
+
+	GameObject* ghost;
 };

@@ -26,5 +26,7 @@ public:
 	void SetAnimationRule(const SpriteAnimationRule& animationRule);
 
 	sf::Sprite* GetSprite();
+
+
 };
 
