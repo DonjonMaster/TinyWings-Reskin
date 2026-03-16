@@ -115,25 +115,45 @@ sf::Vector2f HillComponent::GetWorldPos(sf::Vector2f localPos) const {
 
 void HillComponent::Render(sf::RenderWindow* window) {
     if (!owner) return;
+
+    // 1. Dessin du Sprite (Image de fond)
     if (hasImage && sprite) {
         sprite->setPosition(owner->GetTransform().pos);
         sprite->setScale(owner->GetTransform().scale);
         window->draw(*sprite);
     }
 
-    // Debug : Hitbox simple
-    float thickness = 4.0f;
+    // 2. Debug : Hitbox et Zone de capture
+    float lineThickness = 4.0f; // La petite ligne de surface
+
     for (const auto& seg : segments) {
         sf::Vector2f wS = GetWorldPos(seg.start);
         sf::Vector2f wE = GetWorldPos(seg.end);
-        sf::Color col = (seg.type == SlopeType::UP) ? sf::Color::Red : sf::Color::Blue;
 
-        sf::Vertex line[] = {
-            sf::Vertex(wS, col),
-            sf::Vertex(wS + sf::Vector2f(0, thickness), col),
-            sf::Vertex(wE, col),
-            sf::Vertex(wE + sf::Vector2f(0, thickness), col)
+        // Couleur de la ligne de surface (Rouge = Montée, Bleu = Descente)
+        sf::Color surfaceCol = (seg.type == SlopeType::UP) ? sf::Color::Red : sf::Color::Blue;
+
+        // --- LA ZONE DE COLLISION (Le bloc transparent) ---
+        // On utilise ici collisionThickness au lieu de 300.0f
+        sf::Color zoneCol = sf::Color(255, 0, 0, 50);
+
+        sf::Vertex thicknessZone[] = {
+            sf::Vertex(wS, zoneCol),                                        // Haut Gauche
+            sf::Vertex(wE, zoneCol),                                        // Haut Droite
+            sf::Vertex(wE + sf::Vector2f(0.f, collisionThickness), zoneCol), // Bas Droite
+            sf::Vertex(wS + sf::Vector2f(0.f, collisionThickness), zoneCol)  // Bas Gauche
         };
+
+        // --- LA LIGNE DE SURFACE (La ligne fine de 4px) ---
+        sf::Vertex line[] = {
+            sf::Vertex(wS, surfaceCol),
+            sf::Vertex(wS + sf::Vector2f(0.f, lineThickness), surfaceCol),
+            sf::Vertex(wE, surfaceCol),
+            sf::Vertex(wE + sf::Vector2f(0.f, lineThickness), surfaceCol)
+        };
+
+        // On dessine d'abord la zone, puis la ligne par-dessus
+        window->draw(thicknessZone, 4, sf::PrimitiveType::TriangleStrip);
         window->draw(line, 4, sf::PrimitiveType::TriangleStrip);
     }
 }

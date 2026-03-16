@@ -35,7 +35,7 @@ public:
 
     const std::vector<Segment>& GetSegments() const { return segments; }
 
-    // Ajout du membre manquant
+    float collisionThickness = 100.0f;
     bool isOneWay;
 
 private:

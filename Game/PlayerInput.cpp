@@ -21,7 +21,6 @@ void DivingInput::Update(float dt) {
     auto* input = owner->GetComponent<InputHandler>();
     auto* grav = owner->GetComponent<GravityComponent>();
     auto& transform = owner->GetTransform();
-
     if (!input || !grav) return;
 
     // --- 1. Physique de base ---
@@ -29,22 +28,16 @@ void DivingInput::Update(float dt) {
     if (isPressed) GravityMultiplier += 10.0f * dt;
     else if (GravityMultiplier > 1.0f) GravityMultiplier -= 2.0f * dt;
     GravityMultiplier = std::clamp(GravityMultiplier, 1.0f, 6.0f);
-
     grav->SetGravity({ 0.f, PlayerSettings::GRAVITY * GravityMultiplier });
 
-    // --- 2. Détection du Sol (Logique Blindée) ---
+    // --- 2. Détection du Sol ---
     Scene* currentScene = owner->GetScene();
     if (currentScene) {
-        float currentX = transform.pos.x;
-        float currentY = transform.pos.y;
-
-        // CRUCIAL : On calcule où était le joueur juste avant ce mouvement
-        float prevY = currentY - (transform.velocity.y * dt);
-
-        float bestSurfaceY = 999999.0f;
+        float bestSurfaceY = 0.0f;
         sf::Vector2f bestSlopeDir;
         SlopeType bestSlopeType = SlopeType::UP;
         bool foundGroundThisFrame = false;
+        float minDistance = 999999.0f;
 
         for (GameObject* obj : currentScene->GetGameObjects()) {
             auto* hill = obj->GetComponent<HillComponent>();
@@ -54,27 +47,27 @@ void DivingInput::Update(float dt) {
                 sf::Vector2f wStart = hill->GetWorldPos(seg.start);
                 sf::Vector2f wEnd = hill->GetWorldPos(seg.end);
 
-                // On élargit un tout petit peu la zone X pour éviter les micro-trous entre segments
-                float minX = std::min(wStart.x, wEnd.x) - 0.1f;
-                float maxX = std::max(wStart.x, wEnd.x) + 0.1f;
+                // CORRECTIF TROU : On utilise une marge de 1.0f pour les pentes raides
+                float minX = std::min(wStart.x, wEnd.x) - 1.0f;
+                float maxX = std::max(wStart.x, wEnd.x) + 1.0f;
 
-                if (currentX >= minX && currentX <= maxX) {
-                    float t = (currentX - wStart.x) / (wEnd.x - wStart.x);
+                if (transform.pos.x >= minX && transform.pos.x <= maxX) {
+                    float t = (transform.pos.x - wStart.x) / (wEnd.x - wStart.x);
+                    t = std::clamp(t, 0.0f, 1.0f);
                     float surfaceY = wStart.y + t * (wEnd.y - wStart.y);
 
-                    // --- LA LOGIQUE ANTI-TRAVERSÉE ---
-                    // Condition A : Le joueur a traversé la ligne (était au dessus, est maintenant en dessous)
-                    bool hasCrossed = (prevY <= surfaceY + 2.0f && currentY >= surfaceY - 1.0f);
+                    // UTILISATION DE LA VRAIE VALEUR DU COMPOSANT
+                    float snapMargin = 15.0f;
+                    if (transform.pos.y >= surfaceY - snapMargin &&
+                        transform.pos.y <= surfaceY + hill->collisionThickness) {
 
-                    // Condition B : Le joueur est déjà au sol et "glisse" (magnétisme pour les bosses)
-                    bool isSliding = (isGrounded && currentY >= surfaceY - 10.0f && currentY <= surfaceY + 20.0f);
+                        // Sécurité envol
+                        if (transform.velocity.y < -100.0f && transform.pos.y < surfaceY) continue;
 
-                    if (hasCrossed || isSliding) {
-
-                        // Sécurité Envol : Si on a une grosse vitesse vers le haut, on ignore
-                        if (transform.velocity.y < -100.0f && currentY < surfaceY) continue;
-
-                        if (surfaceY < bestSurfaceY) {
+                        // Sélection de la plateforme la plus proche (évite la téléportation en haut)
+                        float dist = std::abs(transform.pos.y - surfaceY);
+                        if (dist < minDistance) {
+                            minDistance = dist;
                             bestSurfaceY = surfaceY;
                             sf::Vector2f diff = wEnd - wStart;
                             float length = std::sqrt(diff.x * diff.x + diff.y * diff.y);
@@ -92,24 +85,14 @@ void DivingInput::Update(float dt) {
         if (foundGroundThisFrame) {
             transform.pos.y = bestSurfaceY;
             isGrounded = true;
-
-            float currentSpeed = std::sqrt(transform.velocity.x * transform.velocity.x + transform.velocity.y * transform.velocity.y);
-
-            if (bestSlopeType == SlopeType::DOWN) {
-                float boost = isPressed ? 800.f : 400.f;
-                currentSpeed += boost * dt;
-            }
-            else {
-                float friction = isPressed ? 800.f : 1500.f;
-                currentSpeed -= friction * dt;
-                if (currentSpeed < 150.f) currentSpeed = 150.f;
-            }
-
-            transform.velocity = bestSlopeDir * currentSpeed;
+            // ... (calcul de vitesse habituel) ...
+            float speed = std::sqrt(transform.velocity.x * transform.velocity.x + transform.velocity.y * transform.velocity.y);
+            speed += (bestSlopeType == SlopeType::DOWN ? (isPressed ? 800 : 400) : (isPressed ? -800 : -1500)) * dt;
+            if (speed < 150.f) speed = 150.f;
+            transform.velocity = bestSlopeDir * speed;
         }
         else {
             isGrounded = false;
         }
     }
-    wasPressedLastFrame = isPressed;
 }
