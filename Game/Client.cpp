@@ -45,11 +45,6 @@ void Client::ReceiveData() {
 				if (world->remotePlayers.count(id)) {
 					world->remotePlayers[id]->GetTransform().pos = { x, y };
 				}
-				else {
-					// On créer le fantome
-					/*auto* sceneModule = Engine::GetInstance()->GetModuleManager()->GetModule<SceneModule>();
-					sceneModule->*/
-				}
 			}
 			break;
 		}
@@ -77,12 +72,14 @@ void Client::SendStringMessage(const std::string& message) {
 }
 
 void Client::SendData() {
-	std::string msg;
+	if (!world || !world->playerContext.player) {
+		return;
+	}
+
 	sf::Packet p;
 	p << static_cast<int>(Settings::PacketTypes::PLAYER_DATA);
 
 	auto& transform = world->playerContext.player->GetTransform();
-
 	p << transform.pos.x << transform.pos.y;
 	// Ajouter l'envoi de la position
 	if (socket.send(p, serverIp, serverPort) == sf::Socket::Status::Done) {
@@ -112,7 +109,7 @@ void Client::run(){
 	while (world->window.isOpen()) {
 		world->processEvents();
 
-		if (world->state == GameState::PLAYING) {
+		if (world->state == GameState::PLAYING || world->state == GameState::WATINGFORHOST) {
 			ReceiveData();
 		}
 
@@ -130,6 +127,9 @@ void Client::run(){
 				SendData();
 				ReceiveData();
 			}
+			else if (world->state == GameState::WATINGFORHOST) {
+				ReceiveData();
+			}
 
 			// Update du jeu
 			world->update(dt.asSeconds());
@@ -144,8 +144,8 @@ void Client::run(){
 }
 
 void Client::AttemptJoin() {
-	socket.setBlocking(false);
 
+	socket.setBlocking(false);
 	// Récupérer ce que le joueur entre comme input lors d'une connexion (dans les menus)
 	auto resolvedIp = sf::IpAddress::resolve(world->serverIPInput);
 	if (!resolvedIp) {
@@ -171,6 +171,7 @@ void Client::AttemptJoin() {
 	}
 	else {
 		std::cout << "Connexion avec le serveur établie" << std::endl;
+		world->state = GameState::WATINGFORHOST;
 	}
 
 	p.clear();
@@ -185,6 +186,5 @@ void Client::AttemptJoin() {
 	connected = true;
 
 	// Attendre le lancement d'une partie
-	world->state = GameState::PLAYING;
 	world->uiw.attemptJoin = false;
 }

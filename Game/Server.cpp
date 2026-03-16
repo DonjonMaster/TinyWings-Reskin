@@ -148,7 +148,7 @@ void Server::BroadcastGame()
 	p << static_cast<int>(Settings::PacketTypes::START_GAME);
 	for (auto& [key, con] : connections) {
 		if (serverSocket.send(p, con.address, con.port) == sf::Socket::Status::Done) {
-
+			std::cout << "Le jeu commence : information envoyé à tout les joueurs";
 		}
 	}
 }

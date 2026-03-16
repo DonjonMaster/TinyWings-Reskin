@@ -33,7 +33,7 @@ GameObject* BaseScene::CreateGhost()
 	ghost->GetTransform().scale = player->GetTransform().scale;
 	ghost->GetTransform().pos = player->GetTransform().pos;
 
-	ghost->AddComponent<SpriteRendererComponent>("Assets/Guru.png");
+	ghost->AddComponent<SpriteRendererComponent>("Assets/Ghost.png");
 
 	return ghost;
 }

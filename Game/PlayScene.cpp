@@ -27,6 +27,7 @@ void PlayScene::Create()
     GameObject* player = CreatePlayer();
     player->SetZOrder(10);
 
+    // Les fantomes des autres joueurs
     GameObject* ghost = CreateGhost();
     ghost->SetZOrder(10);
 

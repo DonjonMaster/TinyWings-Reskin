@@ -14,7 +14,8 @@ World::World() :
 	goBackText(font),
 	serverIpText(font),
 	hostMenuInfo(font),
-    startGameText(font)
+    startGameText(font),
+    waitText(font)
 {
 
 	state = MAIN_MENU;
@@ -93,6 +94,11 @@ World::World() :
     startGameText.setCharacterSize(20);
     startGameText.setPosition(sf::Vector2f{ uiw.startGameButton.getPosition().x + 22, uiw.startGameButton.getPosition().y + 12 });
     startGameText.setString("START GAME");
+
+    waitText.setStyle(sf::Text::Bold);
+    waitText.setCharacterSize(30);
+    waitText.setPosition(sf::Vector2f{ 200.f, 300.f });
+    waitText.setString("En attente du serveur");
 }
 
 void World::update(float dt) {
@@ -104,7 +110,7 @@ void World::update(float dt) {
         }
         break;
     case GameState::PLAYING:
-        // Update du joueur
+        window.close();
         break;
     case GameState::HOST:
         if (uiw.goBackToMain) {
@@ -123,7 +129,8 @@ void World::update(float dt) {
     case GameState::HOSTING:
         server.ReceiveData();
         if (uiw.attemptStartGame) {
-            // lancer le jeu
+            server.BroadcastGame();
+            window.close();
         }
         break;
     default:
@@ -175,6 +182,9 @@ void World::render() {
         window.draw(hostMenuInfo);
         window.draw(startGameText);
         break;
+    case GameState::WATINGFORHOST:
+        uiw.update(window, state);
+        window.draw(waitText);
     default:
         break;
     }
@@ -394,7 +404,6 @@ void World::UserInputWindow::update(sf::RenderWindow& w, GameState g) {
             if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
                 attemptStartGame = true;
                 currentSelected = none;
-                w.close();
             }
         }
         else {

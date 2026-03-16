@@ -48,7 +48,6 @@ void GameObject::Destroy()
 
 Transform& GameObject::GetTransform()
 {
-
 	return transform;
 
 }

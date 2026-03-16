@@ -9,7 +9,8 @@ enum GameState {
     MAIN_MENU = 0,
     PLAYING,
     HOST,
-    HOSTING
+    HOSTING,
+    WATINGFORHOST
 };
 
 class World
@@ -87,6 +88,7 @@ public:
     sf::Text serverIpText;
     sf::Text hostMenuInfo;
     sf::Text startGameText;
+    sf::Text waitText;
     std::string userPortInput{};
     std::string serverIPInput{};
     std::string serverPortInput{};
