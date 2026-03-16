@@ -66,28 +66,27 @@ void DivingInput::Update(float dt) {
                         prevSurfaceY = wS.y + prevT * (wE.y - wS.y);
                     }
 
-                    // --- LES VARIABLES DE DÉCISION ---
-                    bool crossedFromAbove = (prevY <= prevSurfaceY + 5.0f) && (transform.pos.y >= surfaceY - 15.0f);
+                    // --- LES VARIABLES DE DÉCISION CORRIGÉES ---
+                    // Marge réduite à 2.0f pour éviter l'effet trampoline invisible en l'air
+                    bool crossedFromAbove = (prevY <= prevSurfaceY + 5.0f) && (transform.pos.y >= surfaceY - 2.0f);
                     float distToSurface = std::abs(transform.pos.y - surfaceY);
                     bool isMovingUp = (transform.pos.y < prevY);
 
                     // --- RÈGLE 1 : "ANTI-POT DE COLLE" (Décollage) ---
-                    // S'il monte et qu'il est physiquement au-dessus de la ligne, on le laisse s'envoler !
-                    if (isMovingUp && transform.pos.y < surfaceY) {
+                    // Tolérance de 2px ajoutée pour ne pas se détacher au moindre défaut de la pente
+                    if (isMovingUp && transform.pos.y < surfaceY - 2.0f) {
                         continue;
                     }
 
                     // --- RÈGLE 2 : ANTI MINI-TP ET ANTI-TÉLÉPORTATION ---
                     if (!isGrounded) {
-                        // Si on vole, on refuse l'aimantation magique.
-                        // On attend que l'oiseau croise physiquement la ligne pour atterrir en douceur.
+                        // Si on vole, on attend un vrai franchissement de la ligne
                         if (!crossedFromAbove) {
                             continue;
                         }
                     }
                     else {
-                        // Si on est DÉJÀ au sol, on utilise l'aimant de 30px pour rester accroché aux descentes.
-                        // Mais si le sol est trop loin (ex: on tombe du bord d'un nuage), on l'ignore.
+                        // Si on glisse déjà, on garde l'aimant de 30px
                         if (distToSurface > 30.0f) {
                             continue;
                         }

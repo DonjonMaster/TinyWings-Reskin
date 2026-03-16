@@ -32,7 +32,7 @@ private:
    
     // --- Nuages ---
     float cloudMinY = -1000.0f;   // Hauteur la plus haute (plus c'est négatif, plus c'est haut)
-    float cloudMaxY = -0.0f;    // Hauteur la plus basse
+    float cloudMaxY = -50.0f;    // Hauteur la plus basse
     float cloudMinGapX = 800.0f;  // Espace minimum entre 2 nuages
     float cloudMaxGapX = 1800.0f; // Espace maximum entre 2 nuages
     float cloudMinScale = 1.0f;   // Taille minimum
@@ -40,7 +40,7 @@ private:
 
     // --- Planètes ---
     float planetMinY = -2500.0f;
-    float planetMaxY = -1000.0f;
+    float planetMaxY = -500.0f;
     float planetMinGapX = 2000.0f;
     float planetMaxGapX = 6000.0f;
     float planetMinScale = 1.0f;
