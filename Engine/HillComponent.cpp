@@ -1,6 +1,7 @@
 #include "HillComponent.h"
 #include "GameObject.h"
-#include <cmath> 
+#include <cmath>
+#include <algorithm>
 
 void HillComponent::Init(sf::Vector2f start, sf::Vector2f end, SlopeType type) {
     Segment seg;
@@ -11,144 +12,128 @@ void HillComponent::Init(sf::Vector2f start, sf::Vector2f end, SlopeType type) {
     hasImage = false;
 }
 
-// Fonction utilitaire Catmull-Rom
-sf::Vector2f GetCatmullRomPosition(float t, sf::Vector2f p0, sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f p3) {
+// Utilitaire interne pour Catmull-Rom
+sf::Vector2f GetCatmullRom(float t, sf::Vector2f p0, sf::Vector2f p1, sf::Vector2f p2, sf::Vector2f p3) {
     float t2 = t * t;
     float t3 = t2 * t;
-
-    float x = 0.5f * ((2.0f * p1.x) +
-        (-p0.x + p2.x) * t +
-        (2.0f * p0.x - 5.0f * p1.x + 4.0f * p2.x - p3.x) * t2 +
-        (-p0.x + 3.0f * p1.x - 3.0f * p2.x + p3.x) * t3);
-
-    float y = 0.5f * ((2.0f * p1.y) +
-        (-p0.y + p2.y) * t +
-        (2.0f * p0.y - 5.0f * p1.y + 4.0f * p2.y - p3.y) * t2 +
-        (-p0.y + 3.0f * p1.y - 3.0f * p2.y + p3.y) * t3);
-
-    return { x, y };
+    return 0.5f * ((2.f * p1) + (-p0 + p2) * t + (2.f * p0 - 5.f * p1 + 4.f * p2 - p3) * t2 + (-p0 + 3.f * p1 - 3.f * p2 + p3) * t3);
 }
 
 void HillComponent::InitFromImage(const std::string& texturePath, int precision) {
     sf::Image image;
-    if (!image.loadFromFile(texturePath)) return;
-    if (!texture->loadFromImage(image)) return;
+
+    // Correction [[nodiscard]] : On DOIT vérifier le retour du booléen
+    if (!image.loadFromFile(texturePath)) {
+        return;
+    }
+
+    if (!texture->loadFromImage(image)) {
+        return;
+    }
 
     sprite = std::make_unique<sf::Sprite>(*texture);
     hasImage = true;
 
     sf::Vector2u size = image.getSize();
-    std::vector<sf::Vector2f> rawPoints;
+    std::vector<sf::Vector2f> pts;
 
-    // --- 1. Extraction des points de contrôle ---
     for (unsigned int x = 0; x < size.x; x += precision) {
         for (unsigned int y = 0; y < size.y; ++y) {
-            if (image.getPixel(sf::Vector2u{ x, y }).a > 128) {
-                rawPoints.push_back({ static_cast<float>(x), static_cast<float>(y) });
+            // SFML 3 utilise des Vector2u pour getPixel
+            if (image.getPixel({ x, y }).a > 128) {
+                pts.push_back({ (float)x, (float)y });
                 break;
             }
         }
     }
+    if (pts.size() < 2) return;
 
-    if (rawPoints.size() < 2) return;
+    std::vector<sf::Vector2f> ctrl = pts;
+    ctrl.insert(ctrl.begin(), pts.front());
+    ctrl.push_back(pts.back());
 
-    // Duplication des extrémités pour fermer la spline
-    std::vector<sf::Vector2f> controlPoints = rawPoints;
-    controlPoints.insert(controlPoints.begin(), controlPoints.front());
-    controlPoints.push_back(controlPoints.back());
+    segments.clear();
+    for (size_t i = 1; i < ctrl.size() - 2; ++i) {
+        sf::Vector2f lastPos = ctrl[i];
+        for (int s = 1; s <= 5; ++s) {
+            float t = s / 5.f;
+            sf::Vector2f newPos = GetCatmullRom(t, ctrl[i - 1], ctrl[i], ctrl[i + 1], ctrl[i + 2]);
 
-    // --- 2. Génération des segments (Spline) ---
-    std::vector<sf::Vector2f> curvePoints;
-    int steps = 5;
-
-    for (size_t i = 1; i < controlPoints.size() - 2; ++i) {
-        for (int s = 0; s < steps; ++s) {
-            float t = static_cast<float>(s) / static_cast<float>(steps);
-            curvePoints.push_back(GetCatmullRomPosition(
-                t,
-                controlPoints[i - 1],
-                controlPoints[i],
-                controlPoints[i + 1],
-                controlPoints[i + 2]
-            ));
+            Segment seg;
+            seg.start = lastPos;
+            seg.end = newPos;
+            seg.type = (seg.end.y < seg.start.y) ? SlopeType::UP : SlopeType::DOWN;
+            segments.push_back(seg);
+            lastPos = newPos;
         }
     }
-    curvePoints.push_back(rawPoints.back());
+}
 
-    // --- 3. Création des segments finaux ---
-    segments.clear();
-    for (size_t i = 0; i < curvePoints.size() - 1; ++i) {
-        Segment seg;
-        seg.start = curvePoints[i];
-        seg.end = curvePoints[i + 1];
-        seg.type = (seg.end.y < seg.start.y) ? SlopeType::UP : SlopeType::DOWN;
-        segments.push_back(seg);
+// Définition de GetSlopeAt (assure-toi qu'elle est bien ici !)
+SlopeData HillComponent::GetSlopeAt(float worldX) {
+    SlopeData data;
+    if (!owner) return data;
+
+    sf::Vector2f scale = owner->GetTransform().scale;
+    sf::Vector2f pos = owner->GetTransform().pos;
+
+    // Monde -> Local
+    float localX = (worldX - pos.x) / scale.x;
+
+    for (const auto& seg : segments) {
+        float minX = std::min(seg.start.x, seg.end.x);
+        float maxX = std::max(seg.start.x, seg.end.x);
+
+        if (localX >= minX - 0.1f && localX <= maxX + 0.1f) {
+            float range = seg.end.x - seg.start.x;
+            float t = (std::abs(range) > 0.0001f) ? (localX - seg.start.x) / range : 0.f;
+            t = std::clamp(t, 0.f, 1.f);
+
+            float localY = seg.start.y + t * (seg.end.y - seg.start.y);
+
+            data.hit = true;
+            data.surfaceY = pos.y + (localY * scale.y);
+
+            sf::Vector2f diff = seg.end - seg.start;
+            float len = std::sqrt(diff.x * diff.x + diff.y * diff.y);
+            data.direction = diff / (len > 0 ? len : 1.f);
+
+            if (data.direction.x < 0) data.direction = -data.direction;
+            data.type = seg.type;
+
+            return data;
+        }
     }
+    return data;
 }
 
 sf::Vector2f HillComponent::GetWorldPos(sf::Vector2f localPos) const {
     if (!owner) return localPos;
-    
-    // On récupère l'échelle de notre GameObject
     sf::Vector2f scale = owner->GetTransform().scale;
-    
-    // On étire la position locale (les points de collision) avec l'échelle
-    sf::Vector2f scaledLocalPos(localPos.x * scale.x, localPos.y * scale.y);
-    
-    return owner->GetTransform().pos + scaledLocalPos;
+    return owner->GetTransform().pos + sf::Vector2f(localPos.x * scale.x, localPos.y * scale.y);
 }
-
 
 void HillComponent::Render(sf::RenderWindow* window) {
     if (!owner) return;
-
-    // Si on a une image et que le sprite est bien initialisé
     if (hasImage && sprite) {
         sprite->setPosition(owner->GetTransform().pos);
         sprite->setScale(owner->GetTransform().scale);
         window->draw(*sprite);
     }
 
-    // --- PARAMÈTRES DE LA LIGNE ---
-    float thickness = 8.0f; // Épaisseur totale de la ligne
-    float radius = thickness / 2.0f;
-
-    // On prépare un cercle qui servira de "jointure" pour boucher les trous
-    // 12 points de précision suffisent pour un petit cercle
-    sf::CircleShape joint(radius, 12);
-    joint.setOrigin({ radius, radius }); // On centre le cercle sur lui-même
-
+    // Debug : Hitbox simple
+    float thickness = 4.0f;
     for (const auto& seg : segments) {
-        sf::Vector2f wStart = GetWorldPos(seg.start);
-        sf::Vector2f wEnd = GetWorldPos(seg.end);
-        sf::Color color = (seg.type == SlopeType::UP) ? sf::Color::Red : sf::Color::Blue;
+        sf::Vector2f wS = GetWorldPos(seg.start);
+        sf::Vector2f wE = GetWorldPos(seg.end);
+        sf::Color col = (seg.type == SlopeType::UP) ? sf::Color::Red : sf::Color::Blue;
 
-        sf::Vector2f dir = wEnd - wStart;
-        float length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
-
-        if (length > 0.0f) {
-            // Calcul du rectangle (comme avant)
-            sf::Vector2f normal(-dir.y / length, dir.x / length);
-            sf::Vector2f offset = normal * radius;
-
-            sf::Vertex line[] = {
-                sf::Vertex(wStart + offset, color),
-                sf::Vertex(wStart - offset, color),
-                sf::Vertex(wEnd + offset, color),
-                sf::Vertex(wEnd - offset, color)
-            };
-
-            // 1. On dessine le segment (le trait)
-            window->draw(line, 4, sf::PrimitiveType::TriangleStrip);
-
-            // 2. On dessine un cercle au début et à la fin pour arrondir les angles !
-            joint.setFillColor(color);
-
-            joint.setPosition(wStart);
-            window->draw(joint);
-
-            joint.setPosition(wEnd);
-            window->draw(joint);
-        }
+        sf::Vertex line[] = {
+            sf::Vertex(wS, col),
+            sf::Vertex(wS + sf::Vector2f(0, thickness), col),
+            sf::Vertex(wE, col),
+            sf::Vertex(wE + sf::Vector2f(0, thickness), col)
+        };
+        window->draw(line, 4, sf::PrimitiveType::TriangleStrip);
     }
 }

@@ -32,21 +32,19 @@ void DivingInput::Update(float dt) {
 
     grav->SetGravity({ 0.f, PlayerSettings::GRAVITY * GravityMultiplier });
 
-    // --- 2. Détection du Sol ---
+    // --- 2. Détection du Sol (Logique Blindée) ---
     Scene* currentScene = owner->GetScene();
     if (currentScene) {
         float currentX = transform.pos.x;
         float currentY = transform.pos.y;
 
+        // CRUCIAL : On calcule où était le joueur juste avant ce mouvement
+        float prevY = currentY - (transform.velocity.y * dt);
+
         float bestSurfaceY = 999999.0f;
         sf::Vector2f bestSlopeDir;
         SlopeType bestSlopeType = SlopeType::UP;
         bool foundGroundThisFrame = false;
-
-        // Paramètres de capture
-        float verticalFall = transform.velocity.y * dt;
-        float snapBottom = std::max(10.0f, verticalFall + 5.0f);
-        float snapTop = 5.0f; // On réduit le snapTop pour permettre le décollage
 
         for (GameObject* obj : currentScene->GetGameObjects()) {
             auto* hill = obj->GetComponent<HillComponent>();
@@ -56,29 +54,31 @@ void DivingInput::Update(float dt) {
                 sf::Vector2f wStart = hill->GetWorldPos(seg.start);
                 sf::Vector2f wEnd = hill->GetWorldPos(seg.end);
 
-                float minX = std::min(wStart.x, wEnd.x);
-                float maxX = std::max(wStart.x, wEnd.x);
+                // On élargit un tout petit peu la zone X pour éviter les micro-trous entre segments
+                float minX = std::min(wStart.x, wEnd.x) - 0.1f;
+                float maxX = std::max(wStart.x, wEnd.x) + 0.1f;
 
                 if (currentX >= minX && currentX <= maxX) {
                     float t = (currentX - wStart.x) / (wEnd.x - wStart.x);
                     float surfaceY = wStart.y + t * (wEnd.y - wStart.y);
 
-                    // --- CONDITION DE COLLISION AMÉLIORÉE ---
-                    // On ne collisionne que si :
-                    // 1. On est dans la zone (snap)
-                    // 2. ET on est en train de descendre (velocity.y > 0) 
-                    //    OU on était déjà au sol (isGrounded)
-                    if (currentY >= surfaceY - snapTop && currentY <= surfaceY + snapBottom) {
+                    // --- LA LOGIQUE ANTI-TRAVERSÉE ---
+                    // Condition A : Le joueur a traversé la ligne (était au dessus, est maintenant en dessous)
+                    bool hasCrossed = (prevY <= surfaceY + 2.0f && currentY >= surfaceY - 1.0f);
 
-                        // SI l'oiseau va vers le haut (velocity.y < -50) et qu'il dépasse la surface
-                        // ALORS on le laisse s'envoler (on ignore la collision)
-                        if (transform.velocity.y < -50.0f && currentY < surfaceY) continue;
+                    // Condition B : Le joueur est déjà au sol et "glisse" (magnétisme pour les bosses)
+                    bool isSliding = (isGrounded && currentY >= surfaceY - 10.0f && currentY <= surfaceY + 20.0f);
+
+                    if (hasCrossed || isSliding) {
+
+                        // Sécurité Envol : Si on a une grosse vitesse vers le haut, on ignore
+                        if (transform.velocity.y < -100.0f && currentY < surfaceY) continue;
 
                         if (surfaceY < bestSurfaceY) {
                             bestSurfaceY = surfaceY;
                             sf::Vector2f diff = wEnd - wStart;
                             float length = std::sqrt(diff.x * diff.x + diff.y * diff.y);
-                            bestSlopeDir = diff / length;
+                            bestSlopeDir = diff / (length > 0 ? length : 1.0f);
                             if (bestSlopeDir.x < 0) bestSlopeDir = -bestSlopeDir;
                             bestSlopeType = seg.type;
                             foundGroundThisFrame = true;
@@ -90,7 +90,6 @@ void DivingInput::Update(float dt) {
 
         // --- 3. Résolution ---
         if (foundGroundThisFrame) {
-            // On ne plaque au sol que si on n'est pas en train de "jumper"
             transform.pos.y = bestSurfaceY;
             isGrounded = true;
 
@@ -101,18 +100,14 @@ void DivingInput::Update(float dt) {
                 currentSpeed += boost * dt;
             }
             else {
-                // En montée, si on n'appuie pas, on perd beaucoup de vitesse
                 float friction = isPressed ? 800.f : 1500.f;
                 currentSpeed -= friction * dt;
-
-                // Si la vitesse est trop faible en montée, on risque de rester bloqué
                 if (currentSpeed < 150.f) currentSpeed = 150.f;
             }
 
             transform.velocity = bestSlopeDir * currentSpeed;
         }
         else {
-            // LIBERTÉ : L'oiseau est en l'air
             isGrounded = false;
         }
     }
