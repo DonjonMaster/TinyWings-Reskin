@@ -66,15 +66,31 @@ void DivingInput::Update(float dt) {
                         prevSurfaceY = wS.y + prevT * (wE.y - wS.y);
                     }
 
-                    // --- LA REGLE MAGIQUE (FRANCHISSEMENT DE LIGNE) ---
-                    // Est-ce que le joueur est passé d'AU-DESSUS de la ligne à EN-DESSOUS de la ligne ?
-                    // (+5.0f de marge en haut et -15.0f en bas pour éviter les bugs liés à la vitesse)
+                    // --- LES VARIABLES DE DÉCISION ---
                     bool crossedFromAbove = (prevY <= prevSurfaceY + 5.0f) && (transform.pos.y >= surfaceY - 15.0f);
+                    float distToSurface = std::abs(transform.pos.y - surfaceY);
+                    bool isMovingUp = (transform.pos.y < prevY);
 
-                    // SI ON EST EN L'AIR ET QU'ON N'A PAS FRANCHI LA LIGNE PAR LE HAUT = ON IGNORE.
-                    // (C'est ceci qui détruit l'effet d'aspiration de la flèche violette)
-                    if (!isGrounded && !crossedFromAbove) {
+                    // --- RÈGLE 1 : "ANTI-POT DE COLLE" (Décollage) ---
+                    // S'il monte et qu'il est physiquement au-dessus de la ligne, on le laisse s'envoler !
+                    if (isMovingUp && transform.pos.y < surfaceY) {
                         continue;
+                    }
+
+                    // --- RÈGLE 2 : ANTI MINI-TP ET ANTI-TÉLÉPORTATION ---
+                    if (!isGrounded) {
+                        // Si on vole, on refuse l'aimantation magique.
+                        // On attend que l'oiseau croise physiquement la ligne pour atterrir en douceur.
+                        if (!crossedFromAbove) {
+                            continue;
+                        }
+                    }
+                    else {
+                        // Si on est DÉJÀ au sol, on utilise l'aimant de 30px pour rester accroché aux descentes.
+                        // Mais si le sol est trop loin (ex: on tombe du bord d'un nuage), on l'ignore.
+                        if (distToSurface > 30.0f) {
+                            continue;
+                        }
                     }
 
                     // On vérifie qu'on est bien dans la zone d'épaisseur pour ne pas tomber à l'infini
