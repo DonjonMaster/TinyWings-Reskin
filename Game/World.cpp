@@ -22,6 +22,9 @@ World::World() :
 
     window.create(sf::VideoMode({ 1280, 720 }), "Tiny Wings");
 
+    currentScene = new Scene();
+    currentScene->Create();
+
 	if (!font.openFromFile("Assets/Fonts/Independent Modern 8x8.ttf")) {
 		std::cout << "Impossible de charger la police" << std::endl;
 	}
@@ -130,6 +133,7 @@ void World::update(float dt) {
         server.ReceiveData();
         if (uiw.attemptStartGame) {
             server.BroadcastGame();
+            hosting = true;
             window.close();
         }
         break;
@@ -234,6 +238,30 @@ void World::processEvents() {
         }
     }
 }
+
+void World::StartGame()
+{
+    Engine* engine = Engine::GetInstance();
+    SceneModule* sm = engine->GetModuleManager()->GetModule<SceneModule>();
+
+    currentScene = sm->GetCurrentScene();
+
+    if (!currentScene)
+        return;
+
+    auto players = currentScene->GetGameObjectsWithName("Player");
+
+    if (!players.empty())
+    {
+        playerContext.player = players[0];
+        std::cout << "Player trouvé\n";
+    }
+    else
+    {
+        std::cout << "Player introuvable dans la scene\n";
+    }
+}
+
 
 World::UserInputWindow::UserInputWindow() {
 	currentSelected = SelectedBox::none;
