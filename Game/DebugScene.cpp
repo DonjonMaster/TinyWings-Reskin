@@ -22,9 +22,6 @@
 #define DEBUG
 
 int main() {
-    World* w = new World{};
-    Client c{ w };
-    c.run();
 
     // init necessessaire
     Engine* engine = Engine::GetInstance();
@@ -35,6 +32,7 @@ int main() {
     if (sm) {
         sm->RegisterScene<PlayScene>("Play");
         sm->SetScene("Play");
+
 
 #ifdef DEBUG
         std::cout << "Scene enregistree et lancee." << std::endl;
@@ -47,6 +45,10 @@ int main() {
 #endif // DEBUG
     }
 
+    World* w = new World{};
+    Client c{ w };
+    c.run();
+    
     engine->Run();
     return 0;
 }

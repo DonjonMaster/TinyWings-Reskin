@@ -35,6 +35,7 @@ void Client::ReceiveData() {
 		}
 		case Settings::PacketTypes::START_GAME: {
 			std::cout << "Le serveur à lancé la partie" << std::endl;
+			world->StartGame();
 			world->state = GameState::PLAYING;
 			break;
 		}
@@ -105,6 +106,12 @@ void Client::run(){
 	sf::Clock clock;
 	sf::Time t{ sf::Time::Zero };
 	sf::Time dt{ sf::seconds(1.0f / 60.f) };
+
+	// On échanges les données en jeu
+	if (world->state == GameState::PLAYING) {
+		SendData();
+		ReceiveData();
+	}
 	
 	while (world->window.isOpen()) {
 		world->processEvents();
@@ -122,12 +129,7 @@ void Client::run(){
 		while (t > dt) {
 			t -= dt;
 
-			// On échanges les données en jeu
-			if (world->state == GameState::PLAYING) {
-				SendData();
-				ReceiveData();
-			}
-			else if (world->state == GameState::WATINGFORHOST) {
+			if (world->state == GameState::WATINGFORHOST) {
 				ReceiveData();
 			}
 

@@ -4,6 +4,7 @@
 
 #include "Server.h"
 #include "PlayerContext.h"
+#include "SceneModule.h"
 
 enum GameState {
     MAIN_MENU = 0,
@@ -16,8 +17,11 @@ enum GameState {
 class World
 {
 public:
+    Scene* currentScene;
     PlayerContext playerContext;
     std::map<std::string, GameObject*> remotePlayers;
+
+    bool hosting = false;
 
 	World();
 	~World();
@@ -25,6 +29,7 @@ public:
 	void update(float dt);
 	void render();
     void processEvents();
+    void StartGame();
 	// Autres fonctions
 	
     struct UserInputWindow {
