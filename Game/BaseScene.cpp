@@ -29,6 +29,8 @@ GameObject* BaseScene::CreateHillSegment(sf::Vector2f pos, sf::Vector2f start, s
 
 GameObject* BaseScene::CreateGhost()
 {
+	ghost = CreateGameObject({ 240, 120 }, "Ghost");
+
 	ghost->GetTransform().origin = player->GetTransform().origin;
 	ghost->GetTransform().scale = player->GetTransform().scale;
 	ghost->GetTransform().pos = player->GetTransform().pos;

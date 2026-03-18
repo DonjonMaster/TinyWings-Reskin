@@ -29,7 +29,7 @@ void PlayScene::Create()
     player->SetZOrder(10);
 
     // Les fantomes des autres joueurs
-    GameObject* ghost = CreateGhost();
+    ghost = CreateGhost();
     ghost->SetZOrder(10);
 
     SpriteRendererComponent* playerSprite = player->GetComponent<SpriteRendererComponent>();

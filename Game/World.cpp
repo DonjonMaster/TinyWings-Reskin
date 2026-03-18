@@ -24,8 +24,12 @@ World::World() :
 
 	state = MAIN_MENU;
 
-    currentScene = new Scene();
-    currentScene->Create();
+    SceneModule* sm = Engine::GetInstance()->GetModuleManager()->GetModule<SceneModule>();
+    if (sm) {
+        currentScene = sm->GetCurrentScene();
+    }
+
+    server.SetScene(currentScene);
 
 	if (!font.openFromFile("Assets/Fonts/Independent Modern 8x8.ttf")) {
 		std::cout << "Impossible de charger la police" << std::endl;
