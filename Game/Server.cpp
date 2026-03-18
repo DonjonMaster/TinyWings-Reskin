@@ -56,7 +56,7 @@ void Server::ReceiveData() {
 			std::cout << "Joueur " << c.playerNumber << " connecte : " << senderKey << std::endl;
 
 			sf::Packet reply;
-			reply << Settings::PacketTypes::NEW_CONNECTION << c.playerNumber;
+			reply << Settings::PacketTypes::NEW_CONNECTION << senderKey << c.playerNumber;
 
 			if (serverSocket.send(reply, *senderIp, senderPort) != sf::Socket::Status::Done)
 			{

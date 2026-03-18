@@ -10,16 +10,24 @@ Client::Client(World *& world) : adress(sf::IpAddress::Any) {
 	}
 }
 
-void Client::ReceiveData() {
+bool Client::ReceiveData() {
 	sf::Packet p;
 	std::optional<sf::IpAddress> sIp;
 	unsigned short sP;
-
 	p.clear();
+	
+	sf::Socket::Status test = socket.receive(p, sIp, sP);
+	
+	if (test == sf::Socket::Status::NotReady) {
+		std::cout << "No packets to be collected" << std::endl;
+		return false;
+	}
 
-	if (socket.receive(p, sIp, sP) == sf::Socket::Status::Done) {
+	if (test == sf::Socket::Status::Done) {
 		int header;
-		if (!(p >> header)) return;
+		std::cout << "Tried to extract header " << std::endl;
+		if (!(p >> header)) return true;
+		std::cout << "Header extraction succesfull" << std::endl << std::endl;
 
 		switch (Settings::PacketTypes(header)) {
 		case Settings::PacketTypes::NEW_CONNECTION: {
@@ -40,9 +48,14 @@ void Client::ReceiveData() {
 			break;
 		}
 		case Settings::PacketTypes::PLAYER_DATA: {
+			std::cout << std::endl << "Received Player Data" << std::endl;
 			std::string id;
 			float x, y;
 			if (p >> id >> x >> y) {
+				if (world->currentScene) {
+					world->currentScene->UpdatePos({ x, y });
+				}
+
 				if (world->remotePlayers.count(id)) {
 					world->remotePlayers[id]->GetTransform().pos = { x, y };
 				}
@@ -56,11 +69,18 @@ void Client::ReceiveData() {
 			break;
 		}
 		default:
+			std::cout << "Error while receiving data : no PacketTypes : " << Settings::PacketTypes(header) << std::endl;
 			break;
 		}
 	}
+	if (test == sf::Socket::Status::Error) {
+		std::cout << "Error with socket status" << std::endl;
+	}
+
 
 	p.clear();
+
+	return true;
 }
 
 void Client::SendStringMessage(const std::string& message) {
@@ -111,7 +131,7 @@ void Client::run(){
 
 	// Réception des données
 	if (world->state == GameState::WATINGFORHOST || world->state == GameState::PLAYING) {
-		ReceiveData();
+		while (ReceiveData());
 	}
 
 	// Envoi des données si on joue
