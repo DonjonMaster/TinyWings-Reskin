@@ -1,10 +1,13 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-
-#include "Server.h"
+#include <map>
+#include <string>
 #include "PlayerContext.h"
-#include "SceneModule.h"
+#include "Server.h"
+
+class GameObject;
+class Scene;
 
 enum GameState {
     MAIN_MENU = 0,

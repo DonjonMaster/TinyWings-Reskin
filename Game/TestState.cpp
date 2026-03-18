@@ -1,5 +1,6 @@
 #include "TestState.h"
 #include <iostream>
+#include "SpriteRendererComponent.h"
 
 #define DEBUG
 void TestState::Enter(PlayerContext& _context)

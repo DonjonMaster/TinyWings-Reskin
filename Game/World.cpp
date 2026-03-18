@@ -1,4 +1,8 @@
 #include "World.h"
+#include <iostream>
+#include "Scene.h"
+#include "Engine.h"
+#include "SceneModule.h"
 
 World::World() :
 	gameName(font),
@@ -303,7 +307,7 @@ void World::UserInputWindow::draw(sf::RenderWindow* w) {
 }
 
 void World::UserInputWindow::update(sf::RenderWindow* w, GameState g) {
-    sf::Vector2i mousePosition{ sf::Mouse::getPosition(w) };
+    sf::Vector2i mousePosition{ sf::Mouse::getPosition(*w) };
     switch (g) {
     case MAIN_MENU:
 

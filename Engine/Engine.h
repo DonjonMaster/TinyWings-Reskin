@@ -1,8 +1,8 @@
 #pragma once
-#include "../Game/Client.h"
-#include "../Game/World.h"
 
 class ModuleManager;
+class Client;
+class World;
 
 class Engine
 {

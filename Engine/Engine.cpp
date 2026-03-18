@@ -1,6 +1,9 @@
 #include "Engine.h"
 #include "ModuleManager.h"
 #include "WindowModule.h"
+#include "../Game/Client.h"
+#include "../Game/Server.h"
+#include "../Game/World.h"
 
 Engine* Engine::instance = { Engine::GetInstance() };
 ModuleManager* Engine::moduleManager = { Engine::GetModuleManager() };
