@@ -39,7 +39,9 @@ void Scene::Update(float dt)
 
 void Scene::UpdatePos(sf::Vector2f pos)
 {
-	ghost->GetTransform().pos = pos;
+	if (ghost != nullptr) {
+		ghost->GetTransform().pos = pos;
+	}
 }
 
 void Scene::Render(sf::RenderWindow* window)

@@ -27,10 +27,10 @@ public:
 
 protected:
 	std::string name;
+	GameObject* ghost = nullptr;
 
 private:
 	std::vector<GameObject*> gameObjects;
 	std::vector<GameObject*> gameObjectsToDelete;
 
-	GameObject* ghost;
 };

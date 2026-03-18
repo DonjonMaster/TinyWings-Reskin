@@ -16,7 +16,6 @@ class BaseScene : public Scene
 {
 private:
 	GameObject* player = CreateGameObject({ 240, 120 }, "Player");
-	GameObject* ghost = CreateGameObject({ 240, 120 }, "Ghost");
 
 protected:
 

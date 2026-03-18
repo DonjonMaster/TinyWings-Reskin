@@ -27,6 +27,8 @@ public:
 	void Run();
 	bool Init();
 
+	void SetScene(Scene* s) { scene = s; }
+
 	void ReceiveData();
 	void SendData(std::string& sender, sf::Packet& p);
 	void SendInitialData(Connection& c);
