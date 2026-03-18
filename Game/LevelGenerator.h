@@ -13,48 +13,45 @@ private:
     void SpawnCloud();
     void SpawnPlanet();
 
-    // Fonction utilitaire pour choisir un asset au hasard
     std::string GetRandomAsset(const std::vector<std::string>& assets);
-
-    // Fonction utilitaire pour générer un float aléatoire entre min et max
     float GetRandomFloat(float min, float max);
 
     GameObject* player = nullptr;
 
-
-    // level generator settings
-    
-    // --- Paramètres des Collines ---
+    // --- Paramètres des Collines (Sol) ---
     float nextHillX = 0.0f;
     const float HILL_WIDTH = 1212.0f;
     const float HILL_SCALE = 8.0f;
 
-   
-    // --- Nuages ---
-    float cloudMinY = -1000.0f;   // Hauteur la plus haute (plus c'est négatif, plus c'est haut)
-    float cloudMaxY = -50.0f;    // Hauteur la plus basse
-    float cloudMinGapX = 800.0f;  // Espace minimum entre 2 nuages
-    float cloudMaxGapX = 1800.0f; // Espace maximum entre 2 nuages
-    float cloudMinScale = 1.0f;   // Taille minimum
-    float cloudMaxScale = 2.0f;   // Taille maximum
+    // --- Nuages (Chunks en hauteur) ---
+    float lastCloudX = 2000.0f;
+    const float CLOUD_WIDTH = 1212.0f; // Ajuste selon la taille réelle de l'image nuage
+    const float CLOUD_SCALE = 2.0f;
+    const float cloudMinY = -1200.0f;
+    const float cloudMaxY = -600.0f;
+    const float cloudMinGapX = 1500.0f;
+    const float cloudMaxGapX = 3000.0f;
 
-    // --- Planètes ---
-    float planetMinY = -2500.0f;
-    float planetMaxY = -500.0f;
-    float planetMinGapX = 2000.0f;
-    float planetMaxGapX = 6000.0f;
-    float planetMinScale = 1.0f;
-    float planetMaxScale = 3.0f;
+    // --- Planètes (Chunks très hauts) ---
+    float lastPlanetX = 5000.0f;
+    const float PLANET_WIDTH = 1212.0f; // Ajuste selon la taille réelle de l'image planète
+    const float PLANET_SCALE = 4.0f;
+    const float planetMinY = -3500.0f;
+    const float planetMaxY = -2000.0f;
+    const float planetMinGapX = 4000.0f;
+    const float planetMaxGapX = 8000.0f;
 
-    // --- Suivi des distances ---
-    float lastCloudX = 0.0f;
-    float lastPlanetX = 0.0f;
-
-    // --- BANQUE D'ASSETS ---
+    // --- Banque d'Assets ---
     std::vector<std::string> hillAssets;
     std::vector<std::string> cloudAssets;
     std::vector<std::string> planetAssets;
 
+    // --- Object Pooling ---
+    std::vector<GameObject*> activeHills;
+    std::vector<GameObject*> activeClouds;
+    std::vector<GameObject*> activePlanets;
 
-
+    const size_t MAX_HILLS = 8;
+    const size_t MAX_CLOUDS = 6;
+    const size_t MAX_PLANETS = 4;
 };

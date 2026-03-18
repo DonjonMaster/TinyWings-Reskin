@@ -37,7 +37,7 @@ public:
 
     float collisionThickness = 100.0f;
     bool isOneWay;
-    bool showDebugCollision = false;
+    bool showDebugCollision = true;
 
 private:
     std::vector<Segment> segments;

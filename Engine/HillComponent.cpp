@@ -21,50 +21,64 @@ sf::Vector2f GetCatmullRom(float t, sf::Vector2f p0, sf::Vector2f p1, sf::Vector
 
 void HillComponent::InitFromImage(const std::string& texturePath, int precision) {
     sf::Image image;
-
-    // Correction [[nodiscard]] : On DOIT vérifier le retour du booléen
-    if (!image.loadFromFile(texturePath)) {
-        return;
-    }
-
-    if (!texture->loadFromImage(image)) {
-        return;
-    }
+    if (!image.loadFromFile(texturePath)) return;
+    if (!texture->loadFromImage(image)) return;
 
     sprite = std::make_unique<sf::Sprite>(*texture);
     hasImage = true;
+    segments.clear(); // CRITIQUE : Nettoie les anciens segments pour le recyclage
 
     sf::Vector2u size = image.getSize();
-    std::vector<sf::Vector2f> pts;
+
+    // On va stocker des groupes de points séparés par du vide
+    std::vector<std::vector<sf::Vector2f>> pointGroups;
+    std::vector<sf::Vector2f> currentGroup;
 
     for (unsigned int x = 0; x < size.x; x += precision) {
+        bool foundPixelInColumn = false;
         for (unsigned int y = 0; y < size.y; ++y) {
-            // SFML 3 utilise des Vector2u pour getPixel
+            // Si le pixel est opaque (seuil à 128)
             if (image.getPixel({ x, y }).a > 128) {
-                pts.push_back({ (float)x, (float)y });
-                break;
+                currentGroup.push_back({ (float)x, (float)y });
+                foundPixelInColumn = true;
+                break; // On ne prend que le pixel le plus haut de la colonne
             }
         }
+
+        // Si on n'a rien trouvé dans cette colonne et que le groupe actuel n'est pas vide
+        // Cela signifie qu'on vient de quitter un nuage/une île
+        if (!foundPixelInColumn && !currentGroup.empty()) {
+            if (currentGroup.size() >= 2) {
+                pointGroups.push_back(currentGroup);
+            }
+            currentGroup.clear();
+        }
     }
-    if (pts.size() < 2) return;
+    // Ne pas oublier le dernier groupe si l'image finit sur du solide
+    if (currentGroup.size() >= 2) {
+        pointGroups.push_back(currentGroup);
+    }
 
-    std::vector<sf::Vector2f> ctrl = pts;
-    ctrl.insert(ctrl.begin(), pts.front());
-    ctrl.push_back(pts.back());
+    // Génération des segments pour chaque groupe de manière isolée
+    for (auto& pts : pointGroups) {
+        std::vector<sf::Vector2f> ctrl = pts;
+        // Ajout de points de contrôle pour Catmull-Rom
+        ctrl.insert(ctrl.begin(), pts.front());
+        ctrl.push_back(pts.back());
 
-    segments.clear();
-    for (size_t i = 1; i < ctrl.size() - 2; ++i) {
-        sf::Vector2f lastPos = ctrl[i];
-        for (int s = 1; s <= 5; ++s) {
-            float t = s / 5.f;
-            sf::Vector2f newPos = GetCatmullRom(t, ctrl[i - 1], ctrl[i], ctrl[i + 1], ctrl[i + 2]);
+        for (size_t i = 1; i < ctrl.size() - 2; ++i) {
+            sf::Vector2f lastPos = ctrl[i];
+            for (int s = 1; s <= 5; ++s) {
+                float t = s / 5.f;
+                sf::Vector2f newPos = GetCatmullRom(t, ctrl[i - 1], ctrl[i], ctrl[i + 1], ctrl[i + 2]);
 
-            Segment seg;
-            seg.start = lastPos;
-            seg.end = newPos;
-            seg.type = (seg.end.y < seg.start.y) ? SlopeType::UP : SlopeType::DOWN;
-            segments.push_back(seg);
-            lastPos = newPos;
+                Segment seg;
+                seg.start = lastPos;
+                seg.end = newPos;
+                seg.type = (seg.end.y < seg.start.y) ? SlopeType::UP : SlopeType::DOWN;
+                segments.push_back(seg);
+                lastPos = newPos;
+            }
         }
     }
 }
