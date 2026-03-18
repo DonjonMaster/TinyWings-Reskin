@@ -1,33 +1,47 @@
 #pragma once
-#include "Component.h"
-#include "Constants.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <memory>
+#include "Component.h"
+#include "Constants.h"
+
+// Structure de retour pour les collisions
+struct SlopeData {
+    bool hit = false;
+    float surfaceY = 0.f;
+    sf::Vector2f direction = { 1.f, 0.f };
+    SlopeType type = SlopeType::DOWN;
+};
+
+struct Segment {
+    sf::Vector2f start;
+    sf::Vector2f end;
+    SlopeType type;
+};
 
 class HillComponent : public Component {
 public:
-    HillComponent() {}
+    // Initialisation par défaut avec isOneWay à false
+    HillComponent() : texture(std::make_shared<sf::Texture>()), hasImage(false), isOneWay(false) {}
 
     void Init(sf::Vector2f start, sf::Vector2f end, SlopeType type);
-    void InitFromImage(const std::string& texturePath, int precision = 1);
+    void InitFromImage(const std::string& texturePath, int precision = 10);
 
+    // Fonction de collision
+    SlopeData GetSlopeAt(float worldX);
+
+    sf::Vector2f GetWorldPos(sf::Vector2f localPos) const;
     void Render(sf::RenderWindow* window) override;
 
-    struct Segment {
-        sf::Vector2f start;
-        sf::Vector2f end;
-        // Initialisation par défaut pour corriger l'erreur type.6
-        SlopeType type = SlopeType::UP;
-    };
-
     const std::vector<Segment>& GetSegments() const { return segments; }
-    sf::Vector2f GetWorldPos(sf::Vector2f localPos) const;
+
+    float collisionThickness = 100.0f;
+    bool isOneWay;
+    bool showDebugCollision = true;
 
 private:
-    // Utilisation de pointeurs pour s'adapter à SFML 3.0
-    std::unique_ptr<sf::Sprite> sprite;
-    std::shared_ptr<sf::Texture> texture = std::make_shared<sf::Texture>();
     std::vector<Segment> segments;
-    bool hasImage = false;
+    std::shared_ptr<sf::Texture> texture;
+    std::unique_ptr<sf::Sprite> sprite;
+    bool hasImage;
 };

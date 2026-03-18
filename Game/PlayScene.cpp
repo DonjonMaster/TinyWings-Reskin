@@ -1,5 +1,6 @@
 #include "PlayScene.h"
 #include "../Engine/SpriteRendererComponent.h"
+#include "LevelGenerator.h"
 
 void PlayScene::Create()
 {
@@ -8,21 +9,14 @@ void PlayScene::Create()
     auto backgroundSprite = background->AddComponent<BackgroundScroller>();
     background->SetZOrder(-10);
 
-    // creation d'une colline automatique
-    GameObject* h = CreateGameObject({ 0, -20 }, "AutoHill");
-    h->GetTransform().scale = { 8.0f, 8.0f};
-    auto* hill = h->AddComponent<HillComponent>();
-    h->SetZOrder(0);
+        //// Première colline (Hill 1)
+        //GameObject* h = CreateGameObject({ 0, -20 }, "AutoHill");
+        //h->GetTransform().scale = { 8.0f, 8.0f };
+        //auto* hill = h->AddComponent<HillComponent>();
+        //h->SetZOrder(0);
+        //hill->InitFromImage("Assets/chunk1.png", 10);
+        //hill->isOneWay = false; // Sol solide
 
-    // le nom correspond à la fonction du .h
-    hill->InitFromImage("Assets/chunk1.png", 10);
-
-    // hill 2
-    GameObject* h2 = CreateGameObject({ 9696, 20 }, "AutoHill");
-    h2->GetTransform().scale = { 8.0f, 8.0f };
-    auto* hill2 = h2->AddComponent<HillComponent>();
-    h2->SetZOrder(0);
-    hill2->InitFromImage("Assets/chunk1.png", 10);
 
     // ici je peux créer le joueur grace au create player init dans le base scene (on peut toujours mettre les autres elements egalement)
     GameObject* player = CreatePlayer();
@@ -75,4 +69,12 @@ void PlayScene::Update(float dt)
         std::cout << "Score : " << currentScore << " posY : " << currentY << std::endl;
     }
 
+}
+
+    //// level generator
+    GameObject* levelManager = CreateGameObject({ 0.f, 0.f }, "LevelManager");
+    auto* generator = levelManager->AddComponent<LevelGenerator>();
+
+    // On l'initialise en lui donnant le joueur à suivre
+    generator->Init(player);
 }

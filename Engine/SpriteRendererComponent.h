@@ -28,5 +28,7 @@ public:
 	sf::Sprite* GetSprite();
 
 
+
+	void SetTexture(std::string path);
 };
 

@@ -4,7 +4,7 @@
 #include "GravityComponent.h"
 #include "InputHandler.h"
 #include "HillComponent.h"   
-#include <Scene.h>           
+#include <Scene.h>            
 #include <iostream>
 #include <algorithm>
 #include <cmath>
@@ -12,8 +12,6 @@
 void DivingInput::Create() {
     GravityMultiplier = 1.0f;
     owner->GetTransform().velocity = PlayerSettings::START_VELOCITY;
-
-    // CRUCIAL : Point de collision aux pieds
     owner->GetTransform().origin = { 0.5f, 1.0f };
 }
 
@@ -22,102 +20,152 @@ void DivingInput::Update(float dt) {
     auto* input = owner->GetComponent<InputHandler>();
     auto* grav = owner->GetComponent<GravityComponent>();
     auto& transform = owner->GetTransform();
+    if (!input || !grav) return;
 
-    if (input && grav) {
-        // --- Gestion de la Gravité ---
-        bool isPressed = input->IsActionPressed();
+    bool isPressed = input->IsActionPressed();
 
-        // Le bouton augmente juste la gravité (la force qui tire vers le bas)
-        if (isPressed) GravityMultiplier += 10.0f * dt;
-        else if (GravityMultiplier > 1.0f) GravityMultiplier -= 2.0f * dt;
+    // --- 1. GESTION DE LA GRAVITÉ DYNAMIQUE ---
+    if (isPressed) {
+        // En piqué : on alourdit l'oiseau pour gagner de la vitesse
+        GravityMultiplier = 5.0f;
+    }
+    else {
+        // En l'air ou en montée : on allège pour favoriser la hauteur
+        // Si on monte (vélocité Y négative), on baisse la gravité sous la normale
+        if (transform.velocity.y < 0) {
+            GravityMultiplier = 1.1f;
+        }
+        else {
+            GravityMultiplier = 1.5f;
+        }
+    }
+    grav->SetGravity({ 0.f, PlayerSettings::GRAVITY * GravityMultiplier });
 
-        GravityMultiplier = std::clamp(GravityMultiplier, 1.0f, 6.0f);
-        grav->SetGravity({ 0.f, PlayerSettings::GRAVITY * GravityMultiplier });
+    // --- 2. DÉTECTION DU SOL ---
+    Scene* currentScene = owner->GetScene();
+    if (currentScene) {
+        float bestSurfaceY = 0.0f;
+        sf::Vector2f bestSlopeDir;
+        SlopeType bestSlopeType = SlopeType::UP;
+        bool foundGroundThisFrame = false;
+        float minDistance = 999999.0f;
 
-        // --- Détection du Sol ---
-        Scene* currentScene = owner->GetScene();
-        if (currentScene) {
-            const auto& allObjects = currentScene->GetGameObjects();
+        float prevX = transform.pos.x - (transform.velocity.x * dt);
+        float prevY = transform.pos.y - (transform.velocity.y * dt);
 
-            float hillThickness = 15.0f;
+        for (GameObject* obj : currentScene->GetGameObjects()) {
+            auto* hill = obj->GetComponent<HillComponent>();
+            if (!hill) continue;
 
-            // CORRECTION ICI : L'aimantation ne dépend QUE de la chute.
-            // Le bouton 'isPressed' n'influence plus l'aimantation.
-            // Si l'oiseau monte (velocity.y < 0), la marge est de 0. L'inertie l'emportera au sommet !
-            float catchMargin = (transform.velocity.y >= 0.0f) ? 35.0f : 0.0f;
+            for (const auto& seg : hill->GetSegments()) {
+                sf::Vector2f wS = hill->GetWorldPos(seg.start);
+                sf::Vector2f wE = hill->GetWorldPos(seg.end);
 
-            float bestGroundY = 999999.0f;
-            sf::Vector2f bestSlopeDir;
-            SlopeType bestSlopeType = SlopeType::UP;
-            bool foundGround = false;
+                float minX = std::min(wS.x, wE.x) - 1.0f;
+                float maxX = std::max(wS.x, wE.x) + 1.0f;
 
-            float halfWidth = 15.0f;
-            float checkXs[3] = { transform.pos.x, transform.pos.x - halfWidth, transform.pos.x + halfWidth };
+                if (transform.pos.x >= minX && transform.pos.x <= maxX) {
+                    float t = (transform.pos.x - wS.x) / (wE.x - wS.x);
+                    t = std::clamp(t, 0.0f, 1.0f);
+                    float surfaceY = wS.y + t * (wE.y - wS.y);
 
-            for (GameObject* obj : allObjects) {
-                auto* hill = obj->GetComponent<HillComponent>();
-                if (!hill) continue;
+                    float rangeX = wE.x - wS.x;
+                    float prevSurfaceY = surfaceY;
+                    if (std::abs(rangeX) > 0.0001f) {
+                        float prevT = (prevX - wS.x) / rangeX;
+                        prevSurfaceY = wS.y + prevT * (wE.y - wS.y);
+                    }
 
-                for (const auto& seg : hill->GetSegments()) {
-                    sf::Vector2f wStart = hill->GetWorldPos(seg.start);
-                    sf::Vector2f wEnd = hill->GetWorldPos(seg.end);
+                    bool crossedFromAbove = (prevY <= prevSurfaceY + 5.0f) && (transform.pos.y >= surfaceY - 2.0f);
+                    float distToSurface = std::abs(transform.pos.y - surfaceY);
+                    bool isMovingUp = (transform.pos.y < prevY);
 
-                    for (int i = 0; i < 3; ++i) {
-                        float cx = checkXs[i];
+                    if (isMovingUp && transform.pos.y < surfaceY - 2.0f) continue;
 
-                        if (cx >= wStart.x && cx <= wEnd.x) {
-                            float t = (cx - wStart.x) / (wEnd.x - wStart.x);
-                            float surfaceY = wStart.y + t * (wEnd.y - wStart.y);
+                    if (!isGrounded) {
+                        if (!crossedFromAbove) continue;
+                    }
+                    else {
+                        if (distToSurface > 30.0f) continue;
+                    }
 
-                            float penetration = transform.pos.y - surfaceY;
+                    if (transform.pos.y <= surfaceY + hill->collisionThickness) {
+                        if (transform.velocity.y < -100.0f && transform.pos.y < surfaceY) continue;
 
-                            if (penetration >= -catchMargin && penetration <= hillThickness) {
-                                if (surfaceY < bestGroundY) {
-                                    bestGroundY = surfaceY;
-                                    sf::Vector2f diff = wEnd - wStart;
-                                    float length = std::sqrt(diff.x * diff.x + diff.y * diff.y);
-                                    bestSlopeDir = diff / length;
-                                    bestSlopeType = seg.type;
-                                    foundGround = true;
-                                }
-                            }
+                        float dist = std::abs(transform.pos.y - surfaceY);
+                        if (dist < minDistance) {
+                            minDistance = dist;
+                            bestSurfaceY = surfaceY;
+                            sf::Vector2f diff = wE - wS;
+                            float length = std::sqrt(diff.x * diff.x + diff.y * diff.y);
+                            bestSlopeDir = diff / (length > 0 ? length : 1.0f);
+                            if (bestSlopeDir.x < 0) bestSlopeDir = -bestSlopeDir;
+                            bestSlopeType = seg.type;
+                            foundGroundThisFrame = true;
                         }
                     }
                 }
             }
+        }
 
-            // --- Résolution de la Collision ---
-            bool foundGroundThisFrame = false;
+        // --- 3. RÉSOLUTION AU SOL ---
+        if (foundGroundThisFrame) {
+            transform.pos.y = bestSurfaceY;
+            isGrounded = true;
 
-            if (foundGround) {
-                // On s'aligne sur la pente
-                transform.pos.y = bestGroundY;
-                foundGroundThisFrame = true;
+            float speed = std::sqrt(transform.velocity.x * transform.velocity.x + transform.velocity.y * transform.velocity.y);
 
-                // --- LOGIQUE DE VITESSE (AVEC PÉNALITÉ DE MAUVAIS TIMING) ---
-                float currentSpeed = std::sqrt(transform.velocity.x * transform.velocity.x + transform.velocity.y * transform.velocity.y);
-
-                if (bestSlopeType == SlopeType::DOWN) {
-                    // En descente : on accélère
-                    float boost = isPressed ? (500.f * (GravityMultiplier / 1.5f)) : (300.f * (GravityMultiplier / 1.5f));
-                    currentSpeed += boost * dt;
-                }
-                else {
-                    // En montée :
-                    // Si le joueur maintient DIVE en montée = Grosse pénalité de vitesse (comme Tiny Wings)
-                    // Si le joueur relâche en montée = Freinage léger normal
-                    float friction = isPressed ? 1100.f : 600.f;
-                    currentSpeed -= friction * dt;
-
-                    if (currentSpeed < 200.f) currentSpeed = 200.f; // Vitesse minimum
-                }
-
-                transform.velocity = bestSlopeDir * currentSpeed;
+            // Physique de pente ajustée pour l'inertie
+            float accel = 0.0f;
+            if (bestSlopeType == SlopeType::DOWN) {
+                accel = isPressed ? 1500.0f : 200.0f;
+            }
+            else {
+                // Ici on réduit la perte de vitesse si on ne presse pas (Inertie préservée)
+                accel = isPressed ? -2500.0f : -100.0f;
             }
 
-            isGrounded = foundGroundThisFrame;
+            speed += accel * dt;
+            if (speed < 150.f) speed = 150.f;
+
+            // Application de la direction de la pente
+            transform.velocity = bestSlopeDir * speed;
+
+            // ejection : Si on arrive en haut d'une pente (pente qui s'adoucit en montant)
+            // On aide l'oiseau à décoller
+            if (bestSlopeDir.y < -0.05f && !isPressed && speed > 600.0f) {
+                transform.velocity.y -= 50.0f * dt;
+            }
         }
-        wasPressedLastFrame = isPressed;
+        else {
+            isGrounded = false;
+
+            // --- 4. LOGIQUE DE PLONGÉE ASYMÉTRIQUE ---
+            if (isPressed) {
+                transform.velocity.y += 500.0f * dt;
+                float maxDiveSpeed = 1500.0f;
+                if (transform.velocity.y > maxDiveSpeed) transform.velocity.y = maxDiveSpeed;
+            }
+            else {
+                float normalMaxFallSpeed = 700.0f;
+
+                if (transform.velocity.y < 0) {
+                    // On allège encore la montée pour aller plus haut
+                    transform.velocity.y += std::abs(transform.velocity.y) * 0.8f * dt;
+                }
+                else if (transform.velocity.y > normalMaxFallSpeed) {
+                    // Freinage de la chute (effet planeur)
+                    transform.velocity.y -= 400.0f * dt;
+                }
+            }
+
+            // --- 5. SÉCURITÉ VITESSE MINIMUM ---
+            float minForwardSpeed = 250.0f;
+            if (transform.velocity.x < minForwardSpeed) {
+                transform.velocity.x += 800.0f * dt;
+                if (transform.velocity.x > minForwardSpeed) transform.velocity.x = minForwardSpeed;
+            }
+        }
     }
 }
 
