@@ -135,6 +135,7 @@
     <ClCompile Include="BaseScene.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="DebugScene.cpp" />
+    <ClCompile Include="LevelGenerator.cpp" />
     <ClCompile Include="PlayScene.cpp" />
     <ClCompile Include="TestState.cpp" />
     <ClCompile Include="PlayerInput.cpp" />
@@ -150,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="Background.h" />
     <ClInclude Include="BaseScene.h" />
+    <ClInclude Include="LevelGenerator.h" />
     <ClInclude Include="PlayScene.h" />
     <ClInclude Include="TestState.h" />
     <ClInclude Include="PlayerContext.h" />
