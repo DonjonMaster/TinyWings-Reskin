@@ -1,7 +1,6 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <map>
 #include <string>
 #include "PlayerContext.h"
 #include "Server.h"
@@ -9,7 +8,7 @@
 class GameObject;
 class Scene;
 
-enum GameState {
+enum class GameState {
     MAIN_MENU = 0,
     PLAYING,
     HOST,
@@ -20,9 +19,8 @@ enum GameState {
 class World
 {
 public:
-    Scene* currentScene;
+    Scene* currentScene = nullptr;
     PlayerContext playerContext;
-    std::map<std::string, GameObject*> remotePlayers;
 
     bool hosting = false;
 
@@ -104,7 +102,6 @@ public:
 
     GameState state;
 
-    bool RoomFull{ false };
     bool isFinished{ false };
 };
 

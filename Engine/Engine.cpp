@@ -24,36 +24,38 @@ void Engine::Run(Client*& client, World*& world)
 
 	while (!shouldQuit)
 	{
-		// Calcul du dt à chaque début de boucle
 		float dt = clock.restart().asSeconds();
-		// on empêche un dt trop grand (si on déplace la fenêtre par ex)
-		if (dt > 0.05f) dt = 0.05f;
+		if (dt > 0.05f) dt = 0.05f; // Cap dt to prevent large jumps (e.g. window drag)
 
-		// On choisi quelle fenêtre update
+		// Process window events
 		if (!world->isFinished) {
 			world->processEvents(window);
 		}
 		else {
 			wm->Update(dt);
 		}
-		// Le serveur tourne si on est host
+		// BEGIN OF FRAME: receive all pending packets
 		if (world->hosting) {
-			world->server.Run();
+			world->server.DrainReceive();
 		}
-		// Dans tout les cas, on est client (il faut envoyer sa position).
-		client->run();
+		client->Run();
 
 		if (!world->isFinished) {
-			// MENUS / MULTIJOUEUR
+			// MENU / LOBBY
 			world->update(dt);
 			window->clear();
 			world->render(window);
 			window->display();
 		}
 		else {
-			// EN JEU
+			// IN-GAME
 			moduleManager->Update(dt);
 			moduleManager->Render();
+		}
+
+		// END OF FRAME: relay accumulated state to all clients
+		if (world->hosting) {
+			world->server.FlushSends();
 		}
 	}
 

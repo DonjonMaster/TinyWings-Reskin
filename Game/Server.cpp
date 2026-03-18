@@ -1,7 +1,6 @@
 #include "Server.h"
 
 Server::Server() : serverIp(sf::IpAddress::Any) {
-	// On évite de freeze le jeu lors de l'attente de paquets
 	serverSocket.setBlocking(false);
 	auto localIp = sf::IpAddress::getLocalAddress();
 	if (localIp) {
@@ -10,150 +9,230 @@ Server::Server() : serverIp(sf::IpAddress::Any) {
 }
 
 void Server::Run() {
-	ReceiveData();
+	DrainReceive();
+	FlushSends();
 }
 
 bool Server::Init() {
 	if (serverSocket.bind(serverPort) != sf::Socket::Status::Done) {
-		std::cout << "Impossible de lier le socket serveur au port donné : " << serverPort << std::endl;
+		std::cout << "[SERVER] Failed to bind socket to port " << serverPort << std::endl;
 		return false;
 	}
-	// On évite de freeze le jeu lors de l'attente de paquets
 	serverSocket.setBlocking(false);
+	std::cout << "[SERVER] Socket bound to port " << serverPort << std::endl;
 	return true;
 }
 
-void Server::ReceiveData() {
+// ============================================================
+// Receive phase â€” drains every pending packet from the socket.
+// ============================================================
+void Server::DrainReceive() {
 	sf::Packet packet;
 	std::optional<sf::IpAddress> senderIp;
 	unsigned short senderPort;
-	int header;
 
+	while (true) {
+		packet.clear();
+		sf::Socket::Status status = serverSocket.receive(packet, senderIp, senderPort);
 
-	packet.clear();
+		if (status == sf::Socket::Status::NotReady) break;
 
-	if (serverSocket.receive(packet, senderIp, senderPort) == sf::Socket::Status::Done) {
+		if (status != sf::Socket::Status::Done) {
+			std::cout << "[SERVER][RECV] Socket error: status=" << static_cast<int>(status) << std::endl;
+			break;
+		}
 
-		if (!(packet >> header) || !senderIp) return;
+		if (!senderIp) {
+			std::cout << "[SERVER][RECV] Invalid packet (no sender IP)" << std::endl;
+			continue;
+		}
 
-		// On utilise l'Ip extraite
+		Settings::PacketTypes type = ReadHeader(packet);
 		std::string senderKey = senderIp->toString() + ":" + std::to_string(senderPort);
 
-		switch (Settings::PacketTypes(header)) {
-		case Settings::PacketTypes::NEW_CONNECTION: {
-			if (connections.size() == 1) {
-				std::cout << "Un joueur a essayé de se connecter. Le lobby est plein." << std::endl;
-				return;
-			}
-
-			Connection c;
-			c.address = *senderIp;
-			c.port = senderPort;
-			c.playerNumber = connections.size() + 1;
-
-			connections[senderKey] = c;
-
-			std::cout << "Joueur " << c.playerNumber << " connecte : " << senderKey << std::endl;
-
-			sf::Packet reply;
-			reply << Settings::PacketTypes::NEW_CONNECTION << senderKey << c.playerNumber;
-
-			if (serverSocket.send(reply, *senderIp, senderPort) != sf::Socket::Status::Done)
-			{
-				std::cout << "Erreur lors de l'envoi du packet au client" << std::endl;
-			}
-
-			SendInitialData(c);
-
-			std::cout << "Nouvelle connexion avec " << *senderIp << ":" << c.port << std::endl;
-			std::cout << "Connexions total : " << connections.size() << std::endl;
-
+		switch (type) {
+		case Settings::PacketTypes::NEW_CONNECTION:
+			HandleNewConnection(packet, *senderIp, senderPort, senderKey);
 			break;
-		}
-		case Settings::PacketTypes::STRING_MESSAGE: {
-			std::string receivedMsg;
-			if (packet >> receivedMsg) {
-				std::cout << "[MESSAGE de " << senderKey << "] : " << receivedMsg << std::endl;
-			}
+		case Settings::PacketTypes::PLAYER_DATA:
+			HandlePlayerData(packet, senderKey);
 			break;
-		}
-		case Settings::PacketTypes::PLAYER_DATA: {
-			sf::Vector2f pos;
-			if (packet >> pos.x >> pos.y) {
-				connections[senderKey].position = pos;
-				scene->UpdatePos(pos);
-
-				// Envoi aux autres joueurs
-				sf::Packet relay;
-				relay << static_cast<int>(Settings::PacketTypes::PLAYER_DATA) << senderKey << pos.x << pos.y;
-				SendData(senderKey, relay);
-			}
+		case Settings::PacketTypes::DISCONNECT:
+			HandleDisconnect(packet, senderKey);
 			break;
-		}
-		case Settings::PacketTypes::DISCONNECT: {
-			std::cout << "Deconnexion de : " << senderKey << std::endl;
-
-			sf::Packet toSendPacket;
-			toSendPacket << static_cast<int>(Settings::PacketTypes::DISCONNECT) << senderKey;
-
-			SendData(senderKey, toSendPacket);
-			connections.erase(senderKey);
-			std::cout << "Connexions total : " << connections.size() << std::endl;
+		case Settings::PacketTypes::STRING_MESSAGE:
+			HandleStringMessage(packet, senderKey);
 			break;
-		}
 		default:
+			std::cout << "[SERVER][RECV] Unknown packet type: " << type
+				<< " from " << senderKey << std::endl;
 			break;
-
 		}
 	}
-	packet.clear();
 }
 
-void Server::SendData(std::string& sender, sf::Packet& p)
-{
-	for (const auto& [key, val] : connections) {
-		if (key != sender) {
-			if (serverSocket.send(p, val.address, val.port) == sf::Socket::Status::Done) {
+// ============================================================
+// Send phase â€” relays all queued positions to other clients.
+// ============================================================
+void Server::FlushSends() {
+	if (pendingPositions.empty()) return;
 
+	for (const auto& [senderKey, pos] : pendingPositions) {
+		sf::Packet relay;
+		ServerPlayerDataMsg msg{ senderKey, pos };
+		relay << msg;
+
+		int sentCount = 0;
+		for (const auto& [key, val] : connections) {
+			if (key == senderKey) continue;
+			if (serverSocket.send(relay, val.address, val.port) == sf::Socket::Status::Done) {
+				sentCount++;
+			} else {
+				std::cout << "[SERVER][SEND] Failed to relay PLAYER_DATA to " << key << std::endl;
 			}
 		}
+		std::cout << "[SERVER][SEND] Relayed position from " << senderKey
+			<< " to " << sentCount << " client(s)" << std::endl;
+	}
+
+	pendingPositions.clear();
+}
+
+// ============================================================
+// Packet handlers
+// ============================================================
+
+void Server::HandleNewConnection(sf::Packet& packet, const sf::IpAddress& senderIp,
+	unsigned short senderPort, const std::string& senderKey)
+{
+	// Already connected? Ignore duplicate.
+	if (connections.count(senderKey)) {
+		std::cout << "[SERVER][RECV] Duplicate NEW_CONNECTION from " << senderKey << " - ignored" << std::endl;
+		return;
+	}
+
+	if (connections.size() >= 2) {
+		std::cout << "[SERVER][RECV] NEW_CONNECTION from " << senderKey << " rejected: lobby full" << std::endl;
+		return;
+	}
+
+	Connection c;
+	c.address = senderIp;
+	c.port = senderPort;
+	c.playerNumber = static_cast<int>(connections.size()) + 1;
+	connections[senderKey] = c;
+
+	std::cout << "[SERVER][RECV] NEW_CONNECTION from " << senderKey
+		<< " -> Player " << c.playerNumber << std::endl;
+	std::cout << "[SERVER] Total connections: " << connections.size() << std::endl;
+
+	// Confirm the connection to the new client.
+	sf::Packet reply;
+	ConnectionMsg confirm{ senderKey, c.playerNumber };
+	reply << confirm;
+
+	if (serverSocket.send(reply, senderIp, senderPort) != sf::Socket::Status::Done) {
+		std::cout << "[SERVER][SEND] Failed to confirm NEW_CONNECTION to " << senderKey << std::endl;
+	}
+
+	// Send info about players already in the lobby.
+	SendInitialData(senderKey, connections[senderKey]);
+}
+
+void Server::HandlePlayerData(sf::Packet& packet, const std::string& senderKey) {
+	if (connections.count(senderKey) == 0) {
+		std::cout << "[SERVER][RECV] PLAYER_DATA from unknown sender " << senderKey << " - ignored" << std::endl;
+		return;
+	}
+
+	ClientPlayerDataMsg msg;
+	if (packet >> msg) {
+		connections[senderKey].position = msg.position;
+		pendingPositions[senderKey] = msg.position;
+		std::cout << "[SERVER][RECV] PLAYER_DATA from " << senderKey
+			<< " -> (" << msg.position.x << ", " << msg.position.y << ")" << std::endl;
+	} else {
+		std::cout << "[SERVER][RECV] PLAYER_DATA from " << senderKey
+			<< ": failed to extract position" << std::endl;
 	}
 }
 
-void Server::SendInitialData(Connection& c)
-{
-	sf::Packet p;
+void Server::HandleDisconnect(sf::Packet& packet, const std::string& senderKey) {
+	if (connections.count(senderKey) == 0) {
+		std::cout << "[SERVER][RECV] DISCONNECT from unknown sender " << senderKey << " - ignored" << std::endl;
+		return;
+	}
 
+	std::cout << "[SERVER][RECV] DISCONNECT from " << senderKey << std::endl;
+
+	pendingPositions.erase(senderKey);
+
+	// Notify other clients using a typed DisconnectMsg.
+	sf::Packet notify;
+	DisconnectMsg msg{ senderKey };
+	notify << msg;
+	SendToOthers(senderKey, notify);
+
+	connections.erase(senderKey);
+	std::cout << "[SERVER] Total connections: " << connections.size() << std::endl;
+}
+
+void Server::HandleStringMessage(sf::Packet& packet, const std::string& senderKey) {
+	StringMsg msg;
+	if (packet >> msg) {
+		std::cout << "[SERVER][RECV] MESSAGE from " << senderKey << ": " << msg.message << std::endl;
+	}
+}
+
+// ============================================================
+// Send helpers
+// ============================================================
+
+void Server::SendToOthers(const std::string& sender, sf::Packet& p) {
 	for (const auto& [key, val] : connections) {
-		p << Settings::PacketTypes::NEW_CONNECTION << key << val.playerNumber;
+		if (key == sender) continue;
+		if (serverSocket.send(p, val.address, val.port) != sf::Socket::Status::Done) {
+			std::cout << "[SERVER][SEND] Failed to send to " << key << std::endl;
+		}
+	}
+}
+
+void Server::SendInitialData(const std::string& newKey, const Connection& c) {
+	for (const auto& [key, val] : connections) {
+		if (key == newKey) continue;
+
+		sf::Packet p;
+		ConnectionMsg msg{ key, val.playerNumber };
+		p << msg;
+
 		if (serverSocket.send(p, c.address, c.port) == sf::Socket::Status::Done) {
-			std::cout << "Les données initales du Joueur" << val.playerNumber << "ont été envoyées" << std::endl;
+			std::cout << "[SERVER][SEND] Sent initial data (Player " << val.playerNumber
+				<< ") to " << newKey << std::endl;
+		} else {
+			std::cout << "[SERVER][SEND] Failed to send initial data (Player " << val.playerNumber
+				<< ") to " << newKey << std::endl;
 		}
-		p.clear();
 	}
 }
 
-void Server::SendDataToEveryone(sf::Packet& p)
-{
+void Server::SendToEveryone(sf::Packet& p) {
 	for (const auto& [key, val] : connections) {
-		if (serverSocket.send(p, val.address, val.port) == sf::Socket::Status::Done) {
-
+		if (serverSocket.send(p, val.address, val.port) != sf::Socket::Status::Done) {
+			std::cout << "[SERVER][SEND] Failed to broadcast to " << key << std::endl;
 		}
 	}
 }
 
-void Server::BroadcastGame()
-{
+void Server::BroadcastGame() {
 	sf::Packet p;
-	p << static_cast<int>(Settings::PacketTypes::START_GAME);
-	for (auto& [key, con] : connections) {
-		if (serverSocket.send(p, con.address, con.port) == sf::Socket::Status::Done) {
-			std::cout << "Le jeu commence : information envoyé à tout les joueurs";
-		}
-	}
+	StartGameMsg msg;
+	p << msg;
+
+	std::cout << "[SERVER][SEND] Broadcasting START_GAME to " << connections.size() << " client(s)" << std::endl;
+
+	SendToEveryone(p);
 }
 
-sf::IpAddress Server::GetIp()
-{
+sf::IpAddress Server::GetIp() const {
 	return serverIp;
 }

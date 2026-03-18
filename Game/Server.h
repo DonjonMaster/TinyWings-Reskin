@@ -2,20 +2,16 @@
 #include <SFML/Network.hpp>
 #include <iostream>
 #include <unordered_map>
-
 #include <string>
 
-#include "settings.h"
+#include "Settings.h"
+#include "NetPackets.h"
 
-#include "Scene.h"
-
+// Represents a connected client as seen by the server.
 struct Connection {
 	sf::IpAddress address{ sf::IpAddress::Any };
 	unsigned short port{ 0 };
-
 	int playerNumber{ 0 };
-
-	// Ajouter information des joueurs et de leurs positions dans le monde (données à envoyer / recevoir)
 	sf::Vector2f position{ 0, 0 };
 };
 
@@ -24,27 +20,38 @@ class Server
 public:
 	Server();
 
+	// Convenience: DrainReceive + FlushSends in one call (used in lobby).
 	void Run();
+
+	// Bind the server socket. Returns false on failure.
 	bool Init();
 
-	void SetScene(Scene* s) { scene = s; }
+	// --- Frame-split API (used in-game by Engine) ---
+	void DrainReceive();
+	void FlushSends();
 
-	void ReceiveData();
-	void SendData(std::string& sender, sf::Packet& p);
-	void SendInitialData(Connection& c);
-	void SendDataToEveryone(sf::Packet& p);
-
+	// Notify all clients that the game is starting.
 	void BroadcastGame();
 
-	sf::IpAddress GetIp();
-	unsigned short serverPort;
+	sf::IpAddress GetIp() const;
+	unsigned short serverPort = 0;
 
 private:
+	// --- Packet handlers (called from DrainReceive) ---
+	void HandleNewConnection(sf::Packet& packet, const sf::IpAddress& senderIp,
+		unsigned short senderPort, const std::string& senderKey);
+	void HandlePlayerData(sf::Packet& packet, const std::string& senderKey);
+	void HandleDisconnect(sf::Packet& packet, const std::string& senderKey);
+	void HandleStringMessage(sf::Packet& packet, const std::string& senderKey);
+
+	// --- Send helpers ---
+	void SendToOthers(const std::string& sender, sf::Packet& p);
+	void SendInitialData(const std::string& newKey, const Connection& c);
+	void SendToEveryone(sf::Packet& p);
+
 	sf::IpAddress serverIp = sf::IpAddress::Any;
 	sf::UdpSocket serverSocket;
 
 	std::unordered_map<std::string, Connection> connections;
-
-	Scene* scene;
+	std::unordered_map<std::string, sf::Vector2f> pendingPositions;
 };
-

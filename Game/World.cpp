@@ -22,17 +22,15 @@ World::World() :
     waitText(font)
 {
 
-	state = MAIN_MENU;
+	state = GameState::MAIN_MENU;
 
     SceneModule* sm = Engine::GetInstance()->GetModuleManager()->GetModule<SceneModule>();
     if (sm) {
         currentScene = sm->GetCurrentScene();
     }
 
-    server.SetScene(currentScene);
-
 	if (!font.openFromFile("Assets/Fonts/Independent Modern 8x8.ttf")) {
-		std::cout << "Impossible de charger la police" << std::endl;
+		std::cout << "[WORLD] Failed to load font" << std::endl;
 	}
 
 	uiw = UserInputWindow();
@@ -97,7 +95,7 @@ World::World() :
 	hostMenuInfo.setStyle(sf::Text::Bold);
 	hostMenuInfo.setCharacterSize(20);
 	hostMenuInfo.setPosition(sf::Vector2f{ 275, 400 });
-	hostMenuInfo.setString("Le serveur est en cours d'éxecution. Fermez la fenêtre pour fermer le serveur");
+	hostMenuInfo.setString("Le serveur est en cours d'ï¿½xecution. Fermez la fenï¿½tre pour fermer le serveur");
 
     startGameText.setStyle(sf::Text::Bold);
     startGameText.setCharacterSize(20);
@@ -115,7 +113,7 @@ void World::update(float dt) {
     case GameState::MAIN_MENU:
         if (uiw.goToHostScreen) {
             uiw.goToHostScreen = false;
-            state = HOST;
+            state = GameState::HOST;
         }
         break;
     case GameState::PLAYING:
@@ -124,20 +122,22 @@ void World::update(float dt) {
     case GameState::HOST:
         if (uiw.goBackToMain) {
             uiw.goBackToMain = false;
-            state = MAIN_MENU;
+            state = GameState::MAIN_MENU;
         }
         if (uiw.attemptStartServer) {
-            server.serverPort = std::stoul(serverPortInput);
+            uiw.attemptStartServer = false;
+            server.serverPort = static_cast<unsigned short>(std::stoul(serverPortInput));
             if (server.Init()) {
                 serverPortDisplay.setString("Server Port : " + serverPortInput);
                 serverIpText.setString("Server IP: " + server.GetIp().toString());
-                state = HOSTING;
+                state = GameState::HOSTING;
             }
         }
         break;
     case GameState::HOSTING:
-        server.ReceiveData();
+        server.Run();
         if (uiw.attemptStartGame) {
+            uiw.attemptStartGame = false;
             server.BroadcastGame();
             hosting = true;
             isFinished = true;
@@ -257,11 +257,11 @@ void World::StartGame()
     if (!players.empty())
     {
         playerContext.player = players[0];
-        std::cout << "Player trouvé\n";
+        std::cout << "[WORLD] Player found\n";
     }
     else
     {
-        std::cout << "Player introuvable dans la scene\n";
+        std::cout << "[WORLD] Player not found in scene\n";
     }
 }
 
@@ -313,7 +313,7 @@ void World::UserInputWindow::draw(sf::RenderWindow* w) {
 void World::UserInputWindow::update(sf::RenderWindow* w, GameState g) {
     sf::Vector2i mousePosition{ sf::Mouse::getPosition(*w) };
     switch (g) {
-    case MAIN_MENU:
+    case GameState::MAIN_MENU:
 
         if (userPortBox.getGlobalBounds().contains(sf::Vector2f{ static_cast<float> (mousePosition.x), static_cast<float> (mousePosition.y) })) {
             userPortBox.setFillColor(gray);
@@ -388,7 +388,7 @@ void World::UserInputWindow::update(sf::RenderWindow* w, GameState g) {
         }
 
         break;
-    case HOST:
+    case GameState::HOST:
 
         if (startServerHostButton.getGlobalBounds().contains(sf::Vector2f{ static_cast<float> (mousePosition.x), static_cast<float> (mousePosition.y) })) {
             startServerHostButton.setFillColor(lightGray);
@@ -429,7 +429,7 @@ void World::UserInputWindow::update(sf::RenderWindow* w, GameState g) {
         }
 
         break;
-    case HOSTING:
+    case GameState::HOSTING:
         if (startGameButton.getGlobalBounds().contains(sf::Vector2f{ static_cast<float> (mousePosition.x), static_cast<float> (mousePosition.y) })) {
             startGameButton.setFillColor(lightGreen);
             if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
