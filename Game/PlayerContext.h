@@ -1,7 +1,7 @@
 #pragma once
-#include <SpriteRendererComponent.h>
 
 class GameObject;
+class SpriteRendererComponent;
 
 class PlayerContext
 {

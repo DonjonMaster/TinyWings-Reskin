@@ -1,10 +1,13 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-
-#include "Server.h"
+#include <map>
+#include <string>
 #include "PlayerContext.h"
-#include "SceneModule.h"
+#include "Server.h"
+
+class GameObject;
+class Scene;
 
 enum GameState {
     MAIN_MENU = 0,
@@ -27,8 +30,8 @@ public:
 	~World();
 
 	void update(float dt);
-	void render();
-    void processEvents();
+	void render(sf::RenderWindow* window);
+    void processEvents(sf::RenderWindow* window);
     void StartGame();
 	// Autres fonctions
 	
@@ -69,12 +72,11 @@ public:
 
 
     public:
-        void update(sf::RenderWindow&, GameState);
+        void update(sf::RenderWindow*, GameState);
 
-        void draw(sf::RenderWindow&);
+        void draw(sf::RenderWindow*);
     };
 
-    sf::RenderWindow window;
     sf::Font font;
 
     sf::Text gameName;
@@ -103,5 +105,6 @@ public:
     GameState state;
 
     bool RoomFull{ false };
+    bool isFinished{ false };
 };
 

@@ -1,4 +1,5 @@
 #include "PlayScene.h"
+#include "../Engine/SpriteRendererComponent.h"
 
 void PlayScene::Create()
 {

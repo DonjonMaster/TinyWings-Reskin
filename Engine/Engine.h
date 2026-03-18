@@ -1,12 +1,14 @@
 #pragma once
 
 class ModuleManager;
+class Client;
+class World;
 
 class Engine
 {
 public:
 	void Initialize();
-	void Run();
+	void Run(Client*& client, World*& world);
 	void Quit();
 
 	// Récupère l'instance du moteur
