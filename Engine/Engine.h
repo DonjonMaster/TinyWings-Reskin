@@ -1,5 +1,6 @@
 #pragma once
-// Include de World
+#include "../Game/Client.h"
+#include "../Game/World.h"
 
 class ModuleManager;
 
@@ -7,7 +8,7 @@ class Engine
 {
 public:
 	void Initialize();
-	void Run();
+	void Run(Client*& client, World*& world);
 	void Quit();
 
 	// Récupère l'instance du moteur

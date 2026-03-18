@@ -27,8 +27,12 @@ int main() {
     Engine* engine = Engine::GetInstance();
     engine->Initialize();
 
-    // application de la scene
+    // Récupération des modules
     SceneModule* sm = engine->GetModuleManager()->GetModule<SceneModule>();
+    WindowModule* wm = engine->GetModuleManager()->GetModule<WindowModule>();
+    sf::RenderWindow* window = wm->GetRenderWindow();
+
+    // Enregistrement des scènes
     if (sm) {
         sm->RegisterScene<PlayScene>("Play");
         sm->SetScene("Play");
@@ -45,10 +49,10 @@ int main() {
 #endif // DEBUG
     }
 
-    World* w = new World{};
-    Client c{ w };
-    c.run();
+    // Création du world (menu multijoueur) et du client/serveur
+    World* world = new World{};
+    Client* client = new Client{world};
     
-    engine->Run();
+    engine->Run(client, world);
     return 0;
 }

@@ -20,8 +20,6 @@ World::World() :
 
 	state = MAIN_MENU;
 
-    window.create(sf::VideoMode({ 1280, 720 }), "Tiny Wings");
-
     currentScene = new Scene();
     currentScene->Create();
 
@@ -113,7 +111,7 @@ void World::update(float dt) {
         }
         break;
     case GameState::PLAYING:
-        window.close();
+        isFinished = true;
         break;
     case GameState::HOST:
         if (uiw.goBackToMain) {
@@ -134,7 +132,7 @@ void World::update(float dt) {
         if (uiw.attemptStartGame) {
             server.BroadcastGame();
             hosting = true;
-            window.close();
+            isFinished = true;
         }
         break;
     default:
@@ -143,63 +141,60 @@ void World::update(float dt) {
 }
 
 
-void World::render() {
-    window.clear();
-
+void World::render(sf::RenderWindow* window) {
     switch (state) {
     case GameState::MAIN_MENU:
-        window.draw(gameName);
+        window->draw(gameName);
 
-        window.draw(userPort);
-        window.draw(serverIp);
-        window.draw(serverPort);
+        window->draw(userPort);
+        window->draw(serverIp);
+        window->draw(serverPort);
 
         uiw.update(window, state);
 
         uiw.draw(window);
 
-        window.draw(userPortDisplay);
-        window.draw(serverPortDisplay);
-        window.draw(serverIpDisplay);
-        window.draw(joinButtonText);
-        window.draw(hostButtonText);
+        window->draw(userPortDisplay);
+        window->draw(serverPortDisplay);
+        window->draw(serverIpDisplay);
+        window->draw(joinButtonText);
+        window->draw(hostButtonText);
 
         break;
     case GameState::HOST:
         uiw.update(window, state);
-        window.draw(uiw.startServerHostButton);
-        window.draw(uiw.serverPortBox);
-        window.draw(uiw.goBackButton);
+        window->draw(uiw.startServerHostButton);
+        window->draw(uiw.serverPortBox);
+        window->draw(uiw.goBackButton);
 
-        window.draw(startServerHostText);
-        window.draw(serverIpText);
-        window.draw(serverPort);
-        window.draw(goBackText);
-        window.draw(serverPortDisplay);
+        window->draw(startServerHostText);
+        window->draw(serverIpText);
+        window->draw(serverPort);
+        window->draw(goBackText);
+        window->draw(serverPortDisplay);
         break;
     case GameState::HOSTING:
         uiw.update(window, state);
-        window.draw(uiw.startGameButton);
+        window->draw(uiw.startGameButton);
 
-        window.draw(serverIpText);
-        window.draw(serverPortDisplay);
-        window.draw(hostMenuInfo);
-        window.draw(startGameText);
+        window->draw(serverIpText);
+        window->draw(serverPortDisplay);
+        window->draw(hostMenuInfo);
+        window->draw(startGameText);
         break;
     case GameState::WATINGFORHOST:
         uiw.update(window, state);
-        window.draw(waitText);
+        window->draw(waitText);
+        break;
     default:
         break;
     }
-
-    window.display();
 }
 
-void World::processEvents() {
-    while (const std::optional event = window.pollEvent()) {
+void World::processEvents(sf::RenderWindow* window) {
+    while (const std::optional event = window->pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
-            window.close();
+            isFinished = true;
         }
         else if (const auto* textEntered = event->getIf<sf::Event::TextEntered>()) {
             if (textEntered->unicode < 256) {
@@ -299,15 +294,15 @@ World::UserInputWindow::UserInputWindow() {
     startGameButton.setFillColor(sf::Color::Green);
 }
 
-void World::UserInputWindow::draw(sf::RenderWindow& w) {
-	w.draw(userPortBox);
-	w.draw(serverIpBox);
-	w.draw(serverPortBox);
-	w.draw(joinButton);
-	w.draw(hostButton);
+void World::UserInputWindow::draw(sf::RenderWindow* w) {
+	w->draw(userPortBox);
+	w->draw(serverIpBox);
+	w->draw(serverPortBox);
+	w->draw(joinButton);
+	w->draw(hostButton);
 }
 
-void World::UserInputWindow::update(sf::RenderWindow& w, GameState g) {
+void World::UserInputWindow::update(sf::RenderWindow* w, GameState g) {
     sf::Vector2i mousePosition{ sf::Mouse::getPosition(w) };
     switch (g) {
     case MAIN_MENU:

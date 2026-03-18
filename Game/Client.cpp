@@ -103,45 +103,20 @@ void Client::disconnect() {
 }
 
 void Client::run(){
-	sf::Clock clock;
-	sf::Time t{ sf::Time::Zero };
-	sf::Time dt{ sf::seconds(1.0f / 60.f) };
+	// Tentative de connexion
+	if (world->uiw.attemptJoin) {
+		AttemptJoin();
+		world->uiw.attemptJoin = false;
+	}
 
-	// On échanges les données en jeu
-	if (world->state == GameState::PLAYING) {
-		SendData();
+	// Réception des données
+	if (world->state == GameState::WATINGFORHOST || world->state == GameState::PLAYING) {
 		ReceiveData();
 	}
-	
-	while (world->window.isOpen()) {
-		world->processEvents();
 
-		if (world->state == GameState::PLAYING || world->state == GameState::WATINGFORHOST) {
-			ReceiveData();
-		}
-
-		// On essaye de rejoindre un serveur
-		if (world->uiw.attemptJoin) {
-			AttemptJoin();
-		}
-
-		t += clock.restart();
-		while (t > dt) {
-			t -= dt;
-
-			if (world->state == GameState::WATINGFORHOST) {
-				ReceiveData();
-			}
-
-			// Update du jeu
-			world->update(dt.asSeconds());
-		}
-
-		if (world->state == GameState::HOSTING) {
-			world->update(dt.asSeconds());
-		}
-		
-		world->render();
+	// Envoi des données si on joue
+	if (world->state == GameState::PLAYING) {
+		SendData();
 	}
 }
 
