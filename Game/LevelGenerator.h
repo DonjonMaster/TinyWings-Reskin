@@ -18,40 +18,38 @@ private:
 
     GameObject* player = nullptr;
 
-    // --- Paramètres des Collines (Sol) ---
+    // --- PARAMÈTRES ÉTAGE 1 : LE SOL ---
     float nextHillX = 0.0f;
+    const float Y_GROUND = -20.0f;
     const float HILL_WIDTH = 1212.0f;
     const float HILL_SCALE = 8.0f;
 
-    // --- Nuages (Chunks en hauteur) ---
-    float lastCloudX = 2000.0f;
-    const float CLOUD_WIDTH = 1212.0f; // Ajuste selon la taille réelle de l'image nuage
-    const float CLOUD_SCALE = 2.0f;
-    const float cloudMinY = -1200.0f;
-    const float cloudMaxY = -600.0f;
-    const float cloudMinGapX = 1500.0f;
-    const float cloudMaxGapX = 3000.0f;
+    // --- PARAMÈTRES ÉTAGE 2 : LES NUAGES (2 COUCHES) ---
+    float nextCloudX = 0.0f;
+    const float Y_CLOUD_LAYER_1 = -1000.0f;   // Altitude du premier étage de nuages
+    const float Y_CLOUD_LAYER_2 = -1500.0f;  // Altitude du deuxième étage de nuages
+    const float CLOUD_WIDTH = 1500.0f;
+    const float CLOUD_SCALE = 3.0f;
+    bool alternateCloudHeight = false;       // Alterne entre Layer 1 et Layer 2
 
-    // --- Planètes (Chunks très hauts) ---
-    float lastPlanetX = 5000.0f;
-    const float PLANET_WIDTH = 1212.0f; // Ajuste selon la taille réelle de l'image planète
+    // --- PARAMÈTRES ÉTAGE 3 : LES PLANÈTES ---
+    float nextPlanetX = 0.0f;
+    const float Y_PLANET_BASE = -2500.0f;
+    const float PLANET_WIDTH = 1212.0f;
     const float PLANET_SCALE = 4.0f;
-    const float planetMinY = -3500.0f;
-    const float planetMaxY = -2000.0f;
-    const float planetMinGapX = 4000.0f;
-    const float planetMaxGapX = 8000.0f;
 
-    // --- Banque d'Assets ---
+    // --- BANQUES D'ASSETS ---
     std::vector<std::string> hillAssets;
     std::vector<std::string> cloudAssets;
     std::vector<std::string> planetAssets;
 
-    // --- Object Pooling ---
+    // --- POOLING (RECYCLAGE D'OBJETS) ---
     std::vector<GameObject*> activeHills;
     std::vector<GameObject*> activeClouds;
     std::vector<GameObject*> activePlanets;
 
+    // Limites d'objets en mémoire
     const size_t MAX_HILLS = 8;
-    const size_t MAX_CLOUDS = 6;
-    const size_t MAX_PLANETS = 4;
+    const size_t MAX_CLOUDS = 14;
+    const size_t MAX_PLANETS = 6;
 };

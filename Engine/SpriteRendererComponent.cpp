@@ -59,7 +59,6 @@ sf::Sprite* SpriteRendererComponent::GetSprite()
 { 
 	return sprite;
 }
-}
 
 void SpriteRendererComponent::SetTexture(std::string path)
 {

@@ -39,6 +39,13 @@ void PlayScene::Create()
     TestState* test = machine.CreateState<TestState>();
 
     machine.Init(test, ctx);
+
+    //// level generator
+    GameObject* levelManager = CreateGameObject({ 0.f, 0.f }, "LevelManager");
+    auto* generator = levelManager->AddComponent<LevelGenerator>();
+
+    // On l'initialise en lui donnant le joueur à suivre
+    generator->Init(player);
 }
 
 
@@ -69,12 +76,4 @@ void PlayScene::Update(float dt)
         std::cout << "Score : " << currentScore << " posY : " << currentY << std::endl;
     }
 
-}
-
-    //// level generator
-    GameObject* levelManager = CreateGameObject({ 0.f, 0.f }, "LevelManager");
-    auto* generator = levelManager->AddComponent<LevelGenerator>();
-
-    // On l'initialise en lui donnant le joueur à suivre
-    generator->Init(player);
 }
