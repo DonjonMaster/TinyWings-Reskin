@@ -48,30 +48,31 @@ void PlayScene::Create()
 }
 
 
-// refait le score, fait en sorte que le score augmente constamment, toutefois, celon la position y du joueur 
-// le score peut avoir un multiplieur plus grand. Ainsi on aura un score dynamique. Refait donc le code stp mathias
-//void PlayScene::Update(float dt)
-//{
-//    BaseScene::Update(dt);
-//
-//    // je recupere le joueur 
-//    GameObject* playerObj = nullptr;
-//    for (auto* obj : GetGameObjects()) {
-//        if (obj->GetName() == "Player") {
-//            playerObj = obj;
-//            break;
-//        }
-//    }
-//
-//    if (playerObj)
-//    {
-//        float currentY = playerObj->GetTransform().pos.y;
-//
-//        if (currentY < lastScore)
-//        {
-//
-//        }
-//
-//    }
-//
-//}
+// un update pour faire le score
+void PlayScene::Update(float dt)
+{
+    BaseScene::Update(dt);
+
+    // je recupere le joueur 
+    GameObject* player = nullptr;
+    for (auto* obj : GetGameObjects()) {
+        if (obj->GetName() == "Player") {
+            player = obj;
+            break;
+        }
+    }
+
+    // si il existe 
+    if (player)
+    {
+        // on recup sa pos et augemente le score en conséquence
+        float currentY = player->GetTransform().pos.y;
+
+        // score selon la hauteur
+        if (currentY < -300.f) currentScore += score;
+        if (currentY < -600.f) currentScore += score * 1.5f;
+        if (currentY < -900.f) currentScore += score * 2.f;
+        std::cout << "Score : " << currentScore << " posY : " << currentY << std::endl;
+    }
+
+}
