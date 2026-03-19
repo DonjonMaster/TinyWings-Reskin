@@ -2,6 +2,7 @@
 #include "../Engine/SpriteRendererComponent.h"
 #include "LevelGenerator.h"
 #include "Background.h"
+#include <ScoreRenderer.h>
 
 void PlayScene::Create()
 {
@@ -41,6 +42,13 @@ void PlayScene::Create()
 
     machine.Init(test, ctx);
 
+    // On crée un objet vide qui servira de support à l'interface
+    auto hud = CreateGameObject({ 0.f, 0.f }, "HUD");
+    hud->AddComponent<ScoreRenderer>();
+
+    // On s'assure qu'il est dessiné au-dessus de tout le reste (Z-Order élevé)
+    hud->SetZOrder(1000);
+
     //// level generator
     GameObject* levelManager = CreateGameObject({ 0.f, 0.f }, "LevelManager");
     auto* generator = levelManager->AddComponent<LevelGenerator>();
@@ -71,9 +79,10 @@ void PlayScene::Update(float dt)
         float currentY = player->GetTransform().pos.y;
 
         // score selon la hauteur
-        if (currentY < -300.f) currentScore += score;
-        if (currentY < -600.f) currentScore += score * 1.5f;
-        if (currentY < -900.f) currentScore += score * 2.f;
+        if (currentY < -850.f) currentScore += score;
+        if (currentY < -1500.f) currentScore += score * 1.5f;
+        if (currentY < -2500.f) currentScore += score * 2.f;
+        if (currentY < -3500.f) currentScore += score * 2.5f;
         std::cout << "Score : " << currentScore << " posY : " << currentY << std::endl;
     }
 
@@ -92,9 +101,10 @@ void PlayScene::Update(float dt)
         float currentY = ghost->GetTransform().pos.y;
 
         // score selon la hauteur
-        if (currentY < -300.f) currentGhostScore += score;
-        if (currentY < -600.f) currentGhostScore += score * 1.5f;
-        if (currentY < -900.f) currentGhostScore += score * 2.f;
+        if (currentY < -850.f) currentGhostScore += score;
+        if (currentY < -1500.f) currentGhostScore += score * 1.5f;
+        if (currentY < -2500.f) currentGhostScore += score * 2.f;
+        if (currentY < -3500.f) currentGhostScore += score * 2.5f;
         std::cout << "Score : " << currentGhostScore << " posY : " << currentY << std::endl;
     }
 

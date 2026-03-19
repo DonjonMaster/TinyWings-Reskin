@@ -31,7 +31,7 @@ World::World() :
         currentScene = sm->GetCurrentScene();
     }
 
-	if (!font.openFromFile("Assets/Fonts/Independent Modern 8x8.ttf")) {
+	if (!font.openFromFile("Assets/Fonts/HennyPenny-Regular.ttf")) {
 		std::cout << "[WORLD] Failed to load font" << std::endl;
 	}
 
