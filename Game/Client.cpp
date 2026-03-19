@@ -47,7 +47,7 @@ bool Client::ReceiveOne() {
 
 	if (status == sf::Socket::Status::NotReady) return false;
 	if (status == sf::Socket::Status::Error) {
-		std::cout << "[CLIENT] Socket error while receiving" << std::endl;
+		//std::cout << "[CLIENT] Socket error while receiving" << std::endl;
 		return false;
 	}
 	if (status != sf::Socket::Status::Done) return false;
