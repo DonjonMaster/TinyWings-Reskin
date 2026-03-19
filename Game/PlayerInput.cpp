@@ -23,13 +23,6 @@ void DivingInput::Update(float dt) {
     auto& transform = owner->GetTransform();
     if (!input || !grav) return;
 
-    // --- MISE À JOUR DES TIMERS (RÉINITIALISATION) ---
-    auto* timers = owner->GetComponent<TimerComponent>();
-    if (timers) {
-        timers->isTouchingHill = false;
-        timers->isTouchingCloud = false;
-    }
-
     bool isPressed = input->IsActionPressed();
 
     // --- 1. GESTION DE LA GRAVITÉ DYNAMIQUE ---
@@ -124,16 +117,6 @@ void DivingInput::Update(float dt) {
         if (foundGroundThisFrame) {
             transform.pos.y = bestSurfaceY;
             isGrounded = true;
-
-            if (timers && bestSurfaceObject) {
-                std::string objName = bestSurfaceObject->GetName();
-                if (objName == "HillChunk") {
-                    timers->isTouchingHill = true;
-                }
-                else if (objName == "CloudChunk") {
-                    timers->isTouchingCloud = true;
-                }
-            }
 
             float speed = std::sqrt(transform.velocity.x * transform.velocity.x + transform.velocity.y * transform.velocity.y);
 

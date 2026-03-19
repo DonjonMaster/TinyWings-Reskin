@@ -6,91 +6,68 @@
 #include <sstream>
 #include <iomanip>
 
-void TimerRenderer::Create()
-{
-    // Initialisation manuelle
+void TimerRenderer::Create() {
     font = std::make_unique<sf::Font>();
+    if (!font->openFromFile("Assets/Fonts/HennyPenny-Regular.ttf")) return;
 
-    // On utilise la même police que ton ScoreRenderer
-    if (!font->openFromFile("Assets/Fonts/HennyPenny-Regular.ttf")) {
-        std::cerr << "Erreur : Police non trouvée !" << std::endl;
-        return;
-    }
-
-    // Création du texte principal
     mainText = std::make_unique<sf::Text>(*font);
     mainText->setCharacterSize(70);
     mainText->setOutlineThickness(3.f);
 
-    // Création du texte secondaire
     subText = std::make_unique<sf::Text>(*font);
     subText->setCharacterSize(40);
     subText->setOutlineThickness(2.f);
-    subText->setFillColor(sf::Color(180, 180, 180));
-    subText->setOutlineColor(sf::Color::Black);
 }
 
-void TimerRenderer::Render(sf::RenderWindow* window)
-{
-    if (!window || !owner || !owner->GetScene() || !mainText || !subText) return;
+void TimerRenderer::Render(sf::RenderWindow* window) {
+    if (!window || !owner) return;
 
-    // Récupération du joueur
     GameObject* player = nullptr;
     for (auto* obj : owner->GetScene()->GetGameObjects()) {
-        if (obj->GetName() == "Player") {
-            player = obj;
-            break;
-        }
+        if (obj->GetName() == "Player") { player = obj; break; }
     }
-
     if (!player) return;
 
-    // Récupération des timers
     auto* timers = player->GetComponent<TimerComponent>();
     if (!timers) return;
 
-    // Logique d'affichage selon ce qu'on touche
-    if (timers->isTouchingHill) {
-        isHillMain = true;
-    }
-    else if (timers->isTouchingCloud) {
-        isHillMain = false;
-    }
+    float playerY = player->GetTransform().pos.y;
 
-    std::ostringstream hillStream, cloudStream;
-    hillStream << std::fixed << std::setprecision(2) << timers->hillTimer;
-    cloudStream << std::fixed << std::setprecision(2) << timers->cloudTimer;
+    // La transition visuelle vers le mode SAFE se fait à la délimitation de l'espace
+    bool inSpace = (playerY <= -3500.0f);
 
-    if (isHillMain) {
-        mainText->setString(hillStream.str());
+    std::ostringstream hSS, cSS;
+    hSS << std::fixed << std::setprecision(2) << timers->hillTimer;
+    cSS << std::fixed << std::setprecision(2) << timers->cloudTimer;
+
+    // --- AFFICHAGE ---
+    if (inSpace) {
+        mainText->setString("SPACE - SAFE");
+        mainText->setFillColor(sf::Color::White);
+        mainText->setOutlineColor(sf::Color(100, 100, 100));
+        subText->setString("Timers paused");
+    }
+    else if (timers->isInHillZone) {
+        mainText->setString(hSS.str());
         mainText->setFillColor(sf::Color(50, 200, 50));
-        mainText->setOutlineColor(sf::Color(20, 100, 20));
-
-        subText->setString(cloudStream.str());
+        subText->setString(cSS.str());
     }
     else {
-        mainText->setString(cloudStream.str());
+        mainText->setString(cSS.str());
         mainText->setFillColor(sf::Color(100, 200, 255));
-        mainText->setOutlineColor(sf::Color(20, 50, 150));
-
-        subText->setString(hillStream.str());
+        subText->setString(hSS.str());
     }
 
-    // Centrage à l'écran
-    float windowWidth = static_cast<float>(window->getSize().x);
+    // Positionnement UI
+    float w = static_cast<float>(window->getSize().x);
+    sf::FloatRect mB = mainText->getLocalBounds();
+    mainText->setPosition({ (w / 2.f) - (mB.size.x / 2.f), 20.f });
+    sf::FloatRect sB = subText->getLocalBounds();
+    subText->setPosition({ (w / 2.f) - (sB.size.x / 2.f), 105.f });
 
-    sf::FloatRect mainBounds = mainText->getLocalBounds();
-    mainText->setPosition({ (windowWidth / 2.0f) - (mainBounds.size.x / 2.0f), 20.0f });
-
-    sf::FloatRect subBounds = subText->getLocalBounds();
-    subText->setPosition({ (windowWidth / 2.0f) - (subBounds.size.x / 2.0f), 100.0f });
-
-    // Affichage en vue fixe
     sf::View currentView = window->getView();
     window->setView(window->getDefaultView());
-
     window->draw(*mainText);
     window->draw(*subText);
-
     window->setView(currentView);
 }

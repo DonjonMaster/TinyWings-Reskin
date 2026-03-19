@@ -100,8 +100,8 @@ void PlayScene::Update(float dt)
         float currentY = player->GetTransform().pos.y;
 
         // score selon la hauteur
-        if (currentY < -850.f) currentScore += score;
-        if (currentY < -1500.f) currentScore += score * 1.5f;
+        if (currentY < -1200.f) currentScore += score;
+        if (currentY < -1600.f) currentScore += score * 1.5f;
         if (currentY < -2500.f) currentScore += score * 2.f;
         if (currentY < -3500.f) currentScore += score * 2.5f;
         std::cout << "Score : " << currentScore << " posY : " << currentY << std::endl;
