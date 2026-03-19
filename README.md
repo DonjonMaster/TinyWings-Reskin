@@ -2,7 +2,7 @@
 
 ---
 
-# **À propos**
+# **À propos** 
 
 L'objectif du projet est de reskin le jeu ***Tiny
 Wings***, tout en y ajoutant une fonctionnalité nouvelle.

@@ -28,6 +28,10 @@ public:
     sf::Texture titleTexture;
     sf::Sprite titleSprite{ titleTexture };
 
+    // sprite et texture pour l'ecran titre etc
+    sf::Texture menuBackgroundTexture;
+    sf::Sprite menuBackgroundSprite{ menuBackgroundTexture };
+
 	World();
 	~World();
 

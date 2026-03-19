@@ -36,9 +36,10 @@ void Background::Update(float dt) {
     // On définit une coordonnée fixe dans le MONDE.
     // Si ton joueur commence à 0, mets 0. S'il commence à 600, mets 600.
     // Cette valeur ne doit JAMAIS dépendre de viewCenter.y.
+    float offsetY = 100.f;
     float posY = 0.0f;
 
-    sprite->setPosition({ posX, posY });
+    sprite->setPosition({ posX, posY + offsetY});
 
     // 3. ZOOM / SCALE (Stable)
     // On oublie le zoom dynamique. On met une échelle fixe (ex: 1.0 ou plus).
