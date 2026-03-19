@@ -69,7 +69,16 @@
     <ClCompile Include="SpriteRendererComponent.cpp">
       <Filter>Fichiers sources\Components</Filter>
     </ClCompile>
+    <ClCompile Include="TimerComponent.h">
+      <Filter>Fichiers d%27en-tête\Components</Filter>
+    </ClCompile>
     <ClCompile Include="ScoreRenderer.cpp">
+      <Filter>Fichiers sources\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="TimerRenderer.cpp">
+      <Filter>Fichiers sources\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="TimerComponent.cpp">
       <Filter>Fichiers sources\Components</Filter>
     </ClCompile>
   </ItemGroup>
@@ -129,6 +138,9 @@
       <Filter>Fichiers d%27en-tête\Components</Filter>
     </ClInclude>
     <ClInclude Include="ScoreRenderer.h">
+      <Filter>Fichiers d%27en-tête\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerRenderer.h">
       <Filter>Fichiers d%27en-tête\Components</Filter>
     </ClInclude>
   </ItemGroup>

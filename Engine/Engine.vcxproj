@@ -87,6 +87,9 @@
     <ClCompile Include="ScoreRenderer.cpp" />
     <ClCompile Include="SpriteAnimationRule.h" />
     <ClCompile Include="SpriteRendererComponent.cpp" />
+    <ClCompile Include="TimerComponent.cpp" />
+    <ClCompile Include="TimerComponent.h" />
+    <ClCompile Include="TimerRenderer.cpp" />
     <ClCompile Include="WindowModule.cpp">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -109,6 +112,7 @@
     <ClInclude Include="SpriteRendererComponent.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="StateMachine.h" />
+    <ClInclude Include="TimerRenderer.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="WindowModule.h" />
   </ItemGroup>

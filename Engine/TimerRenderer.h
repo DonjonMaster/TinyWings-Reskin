@@ -3,15 +3,18 @@
 #include "Component.h"
 #include <memory> 
 
-class ScoreRenderer : public Component
+class TimerRenderer : public Component
 {
 public:
-    ScoreRenderer() = default;
+    TimerRenderer() = default;
 
     void Create() override;
     void Render(sf::RenderWindow* window) override;
 
 private:
     std::unique_ptr<sf::Font> font;
-    std::unique_ptr<sf::Text> text;
+    std::unique_ptr<sf::Text> mainText;
+    std::unique_ptr<sf::Text> subText;
+
+    bool isHillMain = true;
 };
