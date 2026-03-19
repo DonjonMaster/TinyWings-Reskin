@@ -19,7 +19,9 @@ World::World() :
 	serverIpText(font),
 	hostMenuInfo(font),
     startGameText(font),
-    waitText(font)
+    waitText(font),
+    soloText(font),
+    multiText(font)
 {
 
 	state = GameState::MAIN_MENU;
@@ -106,11 +108,29 @@ World::World() :
     waitText.setCharacterSize(30);
     waitText.setPosition(sf::Vector2f{ 200.f, 300.f });
     waitText.setString("En attente du serveur");
+
+    soloText.setFont(font);
+    soloText.setString("SOLO");
+    soloText.setPosition({ uiw.soloButton.getPosition().x + 22, uiw.soloButton.getPosition().y + 12});
+
+    multiText.setFont(font);
+    multiText.setString("MULTIJOUEUR");
+    multiText.setPosition({ uiw.multiButton.getPosition().x, uiw.multiButton.getPosition().y + 12});
 }
 
 void World::update(float dt) {
     switch (state) {
     case GameState::MAIN_MENU:
+        if (uiw.goToMultiMenu) {
+            uiw.goToMultiMenu = false;
+            state = GameState::MULTIPLAYER_MENU;
+        }
+        else if (uiw.startSolo) {
+            uiw.startSolo = false;
+            state = GameState::PLAYING;
+        }
+        break;
+    case GameState::MULTIPLAYER_MENU:
         if (uiw.goToHostScreen) {
             uiw.goToHostScreen = false;
             state = GameState::HOST;
@@ -152,6 +172,14 @@ void World::update(float dt) {
 void World::render(sf::RenderWindow* window) {
     switch (state) {
     case GameState::MAIN_MENU:
+        window->draw(uiw.soloButton);
+        window->draw(uiw.multiButton);
+        window->draw(soloText);
+        window->draw(multiText);
+
+        uiw.update(window, state);
+        break;
+    case GameState::MULTIPLAYER_MENU:
         window->draw(gameName);
 
         window->draw(userPort);
@@ -300,6 +328,15 @@ World::UserInputWindow::UserInputWindow() {
     startGameButton.setSize(sf::Vector2f{ 200, 50 });
     startGameButton.setPosition(sf::Vector2f{ 500, 500 });
     startGameButton.setFillColor(sf::Color::Green);
+
+
+    soloButton.setSize({ 300, 60 });
+    soloButton.setPosition({ 400, 250 });
+    soloButton.setFillColor(darkGreen);
+
+    multiButton.setSize({ 300, 60 });
+    multiButton.setPosition({ 400, 350 });
+    multiButton.setFillColor(darkGreen);
 }
 
 void World::UserInputWindow::draw(sf::RenderWindow* w) {
@@ -314,6 +351,28 @@ void World::UserInputWindow::update(sf::RenderWindow* w, GameState g) {
     sf::Vector2i mousePosition{ sf::Mouse::getPosition(*w) };
     switch (g) {
     case GameState::MAIN_MENU:
+        // Logique bouton SOLO
+        if (soloButton.getGlobalBounds().contains(sf::Vector2f{ static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y) })) {
+            soloButton.setFillColor(lightGreen);
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+            {
+                startSolo = true;
+            }
+        }
+        else soloButton.setFillColor(darkGreen);
+
+        // Logique bouton MULTI
+        if (multiButton.getGlobalBounds().contains(sf::Vector2f{static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y)})) {
+            multiButton.setFillColor(lightGreen);
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+            {
+                goToMultiMenu = true;
+            }
+        }
+        else multiButton.setFillColor(darkGreen);
+
+        break;
+    case GameState::MULTIPLAYER_MENU:
 
         if (userPortBox.getGlobalBounds().contains(sf::Vector2f{ static_cast<float> (mousePosition.x), static_cast<float> (mousePosition.y) })) {
             userPortBox.setFillColor(gray);

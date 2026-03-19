@@ -57,6 +57,11 @@ public:
         
         sf::RectangleShape startGameButton;
 
+
+        sf::RectangleShape soloButton;
+        sf::RectangleShape multiButton;
+
+
         sf::Color lightGray{ 200, 200, 200 };
         sf::Color gray{ 152, 156, 155 };
         sf::Color darkGray{ 125, 125, 125 };
@@ -69,6 +74,9 @@ public:
         bool attemptStartServer{ false };
         bool attemptStartGame{ false };
 
+
+        bool goToMultiMenu{ false };
+        bool startSolo{ false };
 
     public:
         void update(sf::RenderWindow*, GameState);
@@ -95,6 +103,10 @@ public:
     sf::Text hostMenuInfo;
     sf::Text startGameText;
     sf::Text waitText;
+
+    sf::Text soloText;
+    sf::Text multiText;
+
     std::string userPortInput{};
     std::string serverIPInput{};
     std::string serverPortInput{};
