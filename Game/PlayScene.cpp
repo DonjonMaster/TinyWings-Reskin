@@ -76,7 +76,7 @@ void PlayScene::Update(float dt)
         if (currentY < -300.f) currentScore += score;
         if (currentY < -600.f) currentScore += score * 1.5f;
         if (currentY < -900.f) currentScore += score * 2.f;
-        //std::cout << "Score : " << currentScore << " posY : " << currentY << std::endl;
+        std::cout << "Score : " << currentScore << " posY : " << currentY << std::endl;
     }
 
 }

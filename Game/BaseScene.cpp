@@ -1,4 +1,4 @@
-#include "BaseScene.h"
+﻿#include "BaseScene.h"
 #include "CameraComponent.h"
 
 GameObject* BaseScene::CreatePlayer()
@@ -26,6 +26,7 @@ GameObject* BaseScene::CreateHillSegment(sf::Vector2f pos, sf::Vector2f start, s
 	comp->Init(start, end, type);
 	return hill;
 }
+
 
 GameObject* BaseScene::CreateGhost()
 {

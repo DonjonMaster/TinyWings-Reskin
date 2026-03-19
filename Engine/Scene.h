@@ -25,12 +25,20 @@ public:
 	void SetName(std::string _name) { name = _name; }
 	std::string GetName() const { return name; }
 
+	//score actuel 
+	float currentScore = 0.f;
+	//score additionel 
+	float score = 0.1f;
+
 protected:
 	std::string name;
 	GameObject* ghost = nullptr;
 
+
+
 private:
 	std::vector<GameObject*> gameObjects;
 	std::vector<GameObject*> gameObjectsToDelete;
+
 
 };

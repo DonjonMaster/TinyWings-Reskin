@@ -93,3 +93,4 @@ std::vector<GameObject*> Scene::GetGameObjectsWithName(std::string name)
 	return gameObjectsWithName;
 
 }
+
