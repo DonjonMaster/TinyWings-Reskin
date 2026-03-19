@@ -13,7 +13,7 @@ void LevelGenerator::Init(GameObject* playerObj) {
 
     // Initialisation du sol
     for (int i = 0; i < 5; ++i) SpawnNextHill();
-    // Initialisation des premiers nuages et planètes
+    // Initialisation des premiers nuages et planï¿½tes
     for (int i = 0; i < 3; ++i) SpawnCloud();
 }
 
@@ -26,12 +26,12 @@ void LevelGenerator::Update(float dt) {
         SpawnNextHill();
     }
 
-    // Nuages : Succession sur deux étages
+    // Nuages : Succession sur deux ï¿½tages
     if (playerX + 5000.0f > nextCloudX) {
         SpawnCloud();
     }
 
-    // Planètes : Succession infinie
+    // Planï¿½tes : Succession infinie
     if (playerX + 6000.0f > nextPlanetX) {
         SpawnPlanet();
     }
@@ -70,7 +70,7 @@ void LevelGenerator::SpawnCloud() {
     float targetY = alternateCloudHeight ? Y_CLOUD_LAYER_2 : Y_CLOUD_LAYER_1;
     alternateCloudHeight = !alternateCloudHeight;
 
-    // Petite variation aléatoire pour casser la ligne droite parfaite
+    // Petite variation alï¿½atoire pour casser la ligne droite parfaite
     targetY += GetRandomFloat(-50.0f, 50.0f);
 
     if (activeClouds.size() < MAX_CLOUDS) {
@@ -129,5 +129,5 @@ std::string LevelGenerator::GetRandomAsset(const std::vector<std::string>& asset
 
 float LevelGenerator::GetRandomFloat(float min, float max) {
     if (min > max) std::swap(min, max);
-    return min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (max - min)));
+    return min + static_cast<float>(rand()) / (RAND_MAX / (max - min));
 }

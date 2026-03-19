@@ -5,41 +5,50 @@
 #include <iostream>
 #include <string>
 
-#include "settings.h"
-#include "SceneModule.h"
-
-
-#include "Engine.h"
+#include "Settings.h"
+#include "NetPackets.h"
 #include "Scene.h"
 
 class World;
 
 class Client
 {
-public :
+public:
 	Client(World*& world);
 
-	bool ReceiveData();
-	void SendStringMessage(const std::string& message);
-	void SendData();
-	void disconnect();
-	// Ajouter des actions du joueur si nécessaire
+	// Called every frame from Engine::Run.
+	void Run();
 
-	// Lancer le jeu (Player et monde)
-	void run();
-
+	// Attempt to connect to the server using the IP/port from World's UI inputs.
 	void AttemptJoin();
 
+	// Send DISCONNECT to the server and unbind the socket.
+	void Disconnect();
+
+	bool IsConnected() const { return connected; }
+
 private:
-	sf::IpAddress serverIp = sf::IpAddress::Any;
-	unsigned short serverPort;
+	// --- Receive ---
+	bool ReceiveOne();
+	void DrainReceive();
 
-	sf::IpAddress adress;
-	unsigned short port;
+	// --- Packet handlers ---
+	void HandleNewConnection(sf::Packet& p);
+	void HandleStartGame(sf::Packet& p);
+	void HandlePlayerData(sf::Packet& p);
+	void HandleDisconnect(sf::Packet& p);
+
+	// --- Send ---
+	void SendPlayerData();
+	void SendStringMessage(const std::string& message);
+
+	// --- Network state ---
 	sf::UdpSocket socket;
+	sf::IpAddress serverIp = sf::IpAddress::Any;
+	unsigned short serverPort = 0;
+	sf::IpAddress localAddress = sf::IpAddress::Any;
+	unsigned short localPort = 0;
+	bool connected = false;
 
-	World* world;
-	// Ajouter les données à envoyer
-
-	bool connected{ false };
+	World* world = nullptr;
 };

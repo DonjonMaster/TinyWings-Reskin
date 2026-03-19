@@ -1,187 +1,205 @@
 #include "Client.h"
 #include "World.h"
 
-Client::Client(World *& world) : adress(sf::IpAddress::Any) {
+Client::Client(World*& world) : localAddress(sf::IpAddress::Any) {
 	this->world = world;
-	// Ajouter en paramètre les données à transférer
 	auto localIp = sf::IpAddress::getLocalAddress();
 	if (localIp) {
-		adress = *localIp;
+		localAddress = *localIp;
 	}
 }
 
-bool Client::ReceiveData() {
-	sf::Packet p;
-	std::optional<sf::IpAddress> sIp;
-	unsigned short sP;
-	p.clear();
-	
-	sf::Socket::Status test = socket.receive(p, sIp, sP);
-	
-	if (test == sf::Socket::Status::NotReady) {
-		std::cout << "No packets to be collected" << std::endl;
-		return false;
-	}
-
-	if (test == sf::Socket::Status::Done) {
-		int header;
-		std::cout << "Tried to extract header " << std::endl;
-		if (!(p >> header)) return true;
-		std::cout << "Header extraction succesfull" << std::endl << std::endl;
-
-		switch (Settings::PacketTypes(header)) {
-		case Settings::PacketTypes::NEW_CONNECTION: {
-			std::string k;
-			int num;
-			if (p >> k >> num) {
-				std::cout << "Connecté en tant que joueur " << num << " (ID: " << k << ")\n";
-				// Une fois connecté, on envoie un message de test
-				SendStringMessage("Bonjour serveur, je suis connecte !");
-			}
-
-			break;
-		}
-		case Settings::PacketTypes::START_GAME: {
-			std::cout << "Le serveur à lancé la partie" << std::endl;
-			world->StartGame();
-			world->state = GameState::PLAYING;
-			break;
-		}
-		case Settings::PacketTypes::PLAYER_DATA: {
-			std::cout << std::endl << "Received Player Data" << std::endl;
-			std::string id;
-			float x, y;
-			if (p >> id >> x >> y) {
-				if (world->currentScene) {
-					world->currentScene->UpdatePos({ x, y });
-				}
-
-				if (world->remotePlayers.count(id)) {
-					world->remotePlayers[id]->GetTransform().pos = { x, y };
-				}
-			}
-			break;
-		}
-		case Settings::PacketTypes::DISCONNECT: {
-			std::string k;
-			p >> k;
-			std::cout << "Player: " << k << " disconnected.\n";
-			break;
-		}
-		default:
-			std::cout << "Error while receiving data : no PacketTypes : " << Settings::PacketTypes(header) << std::endl;
-			break;
-		}
-	}
-	if (test == sf::Socket::Status::Error) {
-		std::cout << "Error with socket status" << std::endl;
-	}
-
-
-	p.clear();
-
-	return true;
-}
-
-void Client::SendStringMessage(const std::string& message) {
-	sf::Packet p;
-	p << static_cast<int>(Settings::PacketTypes::STRING_MESSAGE) << message;
-
-	if (socket.send(p, serverIp, serverPort) != sf::Socket::Status::Done) {
-		std::cout << "Erreur lors de l'envoi du message texte.\n";
-	}
-}
-
-void Client::SendData() {
-	if (!world || !world->playerContext.player) {
-		return;
-	}
-
-	sf::Packet p;
-	p << static_cast<int>(Settings::PacketTypes::PLAYER_DATA);
-
-	auto& transform = world->playerContext.player->GetTransform();
-	p << transform.pos.x << transform.pos.y;
-	// Ajouter l'envoi de la position
-	if (socket.send(p, serverIp, serverPort) == sf::Socket::Status::Done) {
-
-	}
-}
-
-void Client::disconnect() {
-	sf::Packet p;
-	p << Settings::PacketTypes::DISCONNECT << port;
-
-	std::cout << port << std::endl;
-
-	if (socket.send(p, serverIp, serverPort) == sf::Socket::Status::Done) {
-
-	}
-
-	socket.unbind();
-	connected = false;
-}
-
-void Client::run(){
-	// Tentative de connexion
+// ============================================================
+// Main loop â€” called once per frame from Engine::Run.
+// ============================================================
+void Client::Run() {
+	// Handle a join request from the UI.
 	if (world->uiw.attemptJoin) {
 		AttemptJoin();
 		world->uiw.attemptJoin = false;
 	}
 
-	// Réception des données
+	// Receive all pending packets.
 	if (world->state == GameState::WATINGFORHOST || world->state == GameState::PLAYING) {
-		while (ReceiveData());
+		DrainReceive();
 	}
 
-	// Envoi des données si on joue
-	if (world->state == GameState::PLAYING) {
-		SendData();
+	// Send our position to the server.
+	if (world->state == GameState::PLAYING && connected) {
+		SendPlayerData();
 	}
 }
 
-void Client::AttemptJoin() {
+// ============================================================
+// Receive
+// ============================================================
 
-	socket.setBlocking(false);
-	// Récupérer ce que le joueur entre comme input lors d'une connexion (dans les menus)
+void Client::DrainReceive() {
+	while (ReceiveOne());
+}
+
+bool Client::ReceiveOne() {
+	sf::Packet p;
+	std::optional<sf::IpAddress> sIp;
+	unsigned short sP;
+
+	sf::Socket::Status status = socket.receive(p, sIp, sP);
+
+	if (status == sf::Socket::Status::NotReady) return false;
+	if (status == sf::Socket::Status::Error) {
+		std::cout << "[CLIENT] Socket error while receiving" << std::endl;
+		return false;
+	}
+	if (status != sf::Socket::Status::Done) return false;
+
+	Settings::PacketTypes type = ReadHeader(p);
+
+	switch (type) {
+	case Settings::PacketTypes::NEW_CONNECTION:
+		HandleNewConnection(p);
+		break;
+	case Settings::PacketTypes::START_GAME:
+		HandleStartGame(p);
+		break;
+	case Settings::PacketTypes::PLAYER_DATA:
+		HandlePlayerData(p);
+		break;
+	case Settings::PacketTypes::DISCONNECT:
+		HandleDisconnect(p);
+		break;
+	default:
+		std::cout << "[CLIENT][RECV] Unknown packet type: " << type << std::endl;
+		break;
+	}
+
+	return true;
+}
+
+// ============================================================
+// Packet handlers
+// ============================================================
+
+void Client::HandleNewConnection(sf::Packet& p) {
+	ConnectionMsg msg;
+	if (p >> msg) {
+		std::cout << "[CLIENT][RECV] Connected as Player " << msg.playerNumber
+			<< " (ID: " << msg.playerKey << ")" << std::endl;
+		SendStringMessage("Hello from client!");
+	}
+}
+
+void Client::HandleStartGame(sf::Packet& p) {
+	std::cout << "[CLIENT][RECV] Server started the game" << std::endl;
+	world->StartGame();
+	world->state = GameState::PLAYING;
+}
+
+void Client::HandlePlayerData(sf::Packet& p) {
+	ServerPlayerDataMsg msg;
+	if (p >> msg) {
+		std::cout << "[CLIENT][RECV] PLAYER_DATA from " << msg.senderKey
+			<< " -> (" << msg.position.x << ", " << msg.position.y << ")" << std::endl;
+
+		// Update the ghost (remote player) position in the scene.
+		if (world->currentScene) {
+			world->currentScene->UpdatePos(msg.position);
+		}
+	}
+}
+
+void Client::HandleDisconnect(sf::Packet& p) {
+	DisconnectMsg msg;
+	if (p >> msg) {
+		std::cout << "[CLIENT][RECV] Player " << msg.playerKey << " disconnected" << std::endl;
+	}
+}
+
+// ============================================================
+// Send
+// ============================================================
+
+void Client::SendPlayerData() {
+	if (!connected || !world || !world->playerContext.player) return;
+
+	auto& transform = world->playerContext.player->GetTransform();
+
+	sf::Packet p;
+	ClientPlayerDataMsg msg{ transform.pos };
+	p << msg;
+
+	if (socket.send(p, serverIp, serverPort) != sf::Socket::Status::Done) {
+		std::cout << "[CLIENT][SEND] Error sending player data" << std::endl;
+	}
+}
+
+void Client::SendStringMessage(const std::string& message) {
+	if (!connected) return;
+
+	sf::Packet p;
+	StringMsg msg{ message };
+	p << msg;
+
+	if (socket.send(p, serverIp, serverPort) != sf::Socket::Status::Done) {
+		std::cout << "[CLIENT][SEND] Error sending string message" << std::endl;
+	}
+}
+
+// ============================================================
+// Connection management
+// ============================================================
+
+void Client::AttemptJoin() {
+	if (connected) {
+		std::cout << "[CLIENT] Already connected, ignoring join attempt" << std::endl;
+		return;
+	}
+
 	auto resolvedIp = sf::IpAddress::resolve(world->serverIPInput);
 	if (!resolvedIp) {
-		std::cout << "IP invalide\n";
+		std::cout << "[CLIENT] Invalid IP address" << std::endl;
 		return;
 	}
 
 	serverIp = *resolvedIp;
-
 	serverPort = static_cast<unsigned short>(std::stoul(world->serverPortInput));
-	port = static_cast<unsigned short>(std::stoul(world->userPortInput));
+	localPort = static_cast<unsigned short>(std::stoul(world->userPortInput));
 
-	if (socket.bind(port) != sf::Socket::Status::Done) {
-		std::cout << "Impossible de lier le socket au port donné : " << port << std::endl;
+	if (socket.bind(localPort) != sf::Socket::Status::Done) {
+		std::cout << "[CLIENT] Failed to bind socket to port " << localPort << std::endl;
+		return;
+	}
+	socket.setBlocking(false);
+
+	// Send connection request â€” header only, no payload.
+	// Server identifies us by the UDP source ip:port.
+	sf::Packet p;
+	p << Settings::PacketTypes::NEW_CONNECTION;
+
+	if (socket.send(p, serverIp, serverPort) != sf::Socket::Status::Done) {
+		std::cout << "[CLIENT] Failed to send connection request" << std::endl;
+		socket.unbind();
 		return;
 	}
 
+	std::cout << "[CLIENT] Connection request sent to " << serverIp << ":" << serverPort << std::endl;
+	connected = true;
+	world->state = GameState::WATINGFORHOST;
+}
+
+void Client::Disconnect() {
+	if (!connected) return;
+
+	std::string key = localAddress.toString() + ":" + std::to_string(localPort);
+	std::cout << "[CLIENT] Disconnecting: " << key << std::endl;
+
 	sf::Packet p;
-	p << Settings::PacketTypes::NEW_CONNECTION << port;
+	DisconnectMsg msg{ key };
+	p << msg;
 
 	if (socket.send(p, serverIp, serverPort) != sf::Socket::Status::Done) {
-		std::cout << "Impossible de se connecter au server" << std::endl;
-	}
-	else {
-		std::cout << "Connexion avec le serveur établie" << std::endl;
-		world->state = GameState::WATINGFORHOST;
+		std::cout << "[CLIENT][SEND] Error sending DISCONNECT" << std::endl;
 	}
 
-	p.clear();
-
-	ReceiveData();
-
-	// Ajouter les changements liée au player
-
-	socket.setBlocking(false);
-	p.clear();
-
-	connected = true;
-
-	// Attendre le lancement d'une partie
-	world->uiw.attemptJoin = false;
+	socket.unbind();
+	connected = false;
 }

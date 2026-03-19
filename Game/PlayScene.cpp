@@ -12,7 +12,7 @@ void PlayScene::Create()
 
 
 
-        //// Première colline (Hill 1)
+        //// Premiï¿½re colline (Hill 1)
         //GameObject* h = CreateGameObject({ 0, -20 }, "AutoHill");
         //h->GetTransform().scale = { 8.0f, 8.0f };
         //auto* hill = h->AddComponent<HillComponent>();
@@ -21,7 +21,7 @@ void PlayScene::Create()
         //hill->isOneWay = false; // Sol solide
 
 
-    // ici je peux créer le joueur grace au create player init dans le base scene (on peut toujours mettre les autres elements egalement)
+    // ici je peux crï¿½er le joueur grace au create player init dans le base scene (on peut toujours mettre les autres elements egalement)
     GameObject* player = CreatePlayer();
     player->SetZOrder(10);
 
@@ -47,7 +47,7 @@ void PlayScene::Create()
     GameObject* levelManager = CreateGameObject({ 0.f, 0.f }, "LevelManager");
     auto* generator = levelManager->AddComponent<LevelGenerator>();
 
-    // On l'initialise en lui donnant le joueur à suivre
+    // On l'initialise en lui donnant le joueur ï¿½ suivre
     generator->Init(player);
 }
 
@@ -69,14 +69,14 @@ void PlayScene::Update(float dt)
     // si il existe 
     if (player)
     {
-        // on recup sa pos et augemente le score en conséquence
+        // on recup sa pos et augemente le score en consï¿½quence
         float currentY = player->GetTransform().pos.y;
 
         // score selon la hauteur
         if (currentY < -300.f) currentScore += score;
         if (currentY < -600.f) currentScore += score * 1.5f;
         if (currentY < -900.f) currentScore += score * 2.f;
-        std::cout << "Score : " << currentScore << " posY : " << currentY << std::endl;
+        //std::cout << "Score : " << currentScore << " posY : " << currentY << std::endl;
     }
 
 }

@@ -19,20 +19,20 @@ World::World() :
 	serverIpText(font),
 	hostMenuInfo(font),
     startGameText(font),
-    waitText(font)
+    waitText(font),
+    soloText(font),
+    multiText(font)
 {
 
-	state = MAIN_MENU;
+	state = GameState::MAIN_MENU;
 
     SceneModule* sm = Engine::GetInstance()->GetModuleManager()->GetModule<SceneModule>();
     if (sm) {
         currentScene = sm->GetCurrentScene();
     }
 
-    server.SetScene(currentScene);
-
 	if (!font.openFromFile("Assets/Fonts/Independent Modern 8x8.ttf")) {
-		std::cout << "Impossible de charger la police" << std::endl;
+		std::cout << "[WORLD] Failed to load font" << std::endl;
 	}
 
 	uiw = UserInputWindow();
@@ -97,7 +97,7 @@ World::World() :
 	hostMenuInfo.setStyle(sf::Text::Bold);
 	hostMenuInfo.setCharacterSize(20);
 	hostMenuInfo.setPosition(sf::Vector2f{ 275, 400 });
-	hostMenuInfo.setString("Le serveur est en cours d'éxecution. Fermez la fenêtre pour fermer le serveur");
+	hostMenuInfo.setString("Le serveur est en cours d'ï¿½xecution. Fermez la fenï¿½tre pour fermer le serveur");
 
     startGameText.setStyle(sf::Text::Bold);
     startGameText.setCharacterSize(20);
@@ -108,14 +108,32 @@ World::World() :
     waitText.setCharacterSize(30);
     waitText.setPosition(sf::Vector2f{ 200.f, 300.f });
     waitText.setString("En attente du serveur");
+
+    soloText.setFont(font);
+    soloText.setString("SOLO");
+    soloText.setPosition({ uiw.soloButton.getPosition().x + 22, uiw.soloButton.getPosition().y + 12});
+
+    multiText.setFont(font);
+    multiText.setString("MULTIJOUEUR");
+    multiText.setPosition({ uiw.multiButton.getPosition().x, uiw.multiButton.getPosition().y + 12});
 }
 
 void World::update(float dt) {
     switch (state) {
     case GameState::MAIN_MENU:
+        if (uiw.goToMultiMenu) {
+            uiw.goToMultiMenu = false;
+            state = GameState::MULTIPLAYER_MENU;
+        }
+        else if (uiw.startSolo) {
+            uiw.startSolo = false;
+            state = GameState::PLAYING;
+        }
+        break;
+    case GameState::MULTIPLAYER_MENU:
         if (uiw.goToHostScreen) {
             uiw.goToHostScreen = false;
-            state = HOST;
+            state = GameState::HOST;
         }
         break;
     case GameState::PLAYING:
@@ -124,20 +142,22 @@ void World::update(float dt) {
     case GameState::HOST:
         if (uiw.goBackToMain) {
             uiw.goBackToMain = false;
-            state = MAIN_MENU;
+            state = GameState::MAIN_MENU;
         }
         if (uiw.attemptStartServer) {
-            server.serverPort = std::stoul(serverPortInput);
+            uiw.attemptStartServer = false;
+            server.serverPort = static_cast<unsigned short>(std::stoul(serverPortInput));
             if (server.Init()) {
                 serverPortDisplay.setString("Server Port : " + serverPortInput);
                 serverIpText.setString("Server IP: " + server.GetIp().toString());
-                state = HOSTING;
+                state = GameState::HOSTING;
             }
         }
         break;
     case GameState::HOSTING:
-        server.ReceiveData();
+        server.Run();
         if (uiw.attemptStartGame) {
+            uiw.attemptStartGame = false;
             server.BroadcastGame();
             hosting = true;
             isFinished = true;
@@ -152,6 +172,14 @@ void World::update(float dt) {
 void World::render(sf::RenderWindow* window) {
     switch (state) {
     case GameState::MAIN_MENU:
+        window->draw(uiw.soloButton);
+        window->draw(uiw.multiButton);
+        window->draw(soloText);
+        window->draw(multiText);
+
+        uiw.update(window, state);
+        break;
+    case GameState::MULTIPLAYER_MENU:
         window->draw(gameName);
 
         window->draw(userPort);
@@ -257,11 +285,11 @@ void World::StartGame()
     if (!players.empty())
     {
         playerContext.player = players[0];
-        std::cout << "Player trouvé\n";
+        std::cout << "[WORLD] Player found\n";
     }
     else
     {
-        std::cout << "Player introuvable dans la scene\n";
+        std::cout << "[WORLD] Player not found in scene\n";
     }
 }
 
@@ -300,6 +328,15 @@ World::UserInputWindow::UserInputWindow() {
     startGameButton.setSize(sf::Vector2f{ 200, 50 });
     startGameButton.setPosition(sf::Vector2f{ 500, 500 });
     startGameButton.setFillColor(sf::Color::Green);
+
+
+    soloButton.setSize({ 300, 60 });
+    soloButton.setPosition({ 400, 250 });
+    soloButton.setFillColor(darkGreen);
+
+    multiButton.setSize({ 300, 60 });
+    multiButton.setPosition({ 400, 350 });
+    multiButton.setFillColor(darkGreen);
 }
 
 void World::UserInputWindow::draw(sf::RenderWindow* w) {
@@ -313,7 +350,29 @@ void World::UserInputWindow::draw(sf::RenderWindow* w) {
 void World::UserInputWindow::update(sf::RenderWindow* w, GameState g) {
     sf::Vector2i mousePosition{ sf::Mouse::getPosition(*w) };
     switch (g) {
-    case MAIN_MENU:
+    case GameState::MAIN_MENU:
+        // Logique bouton SOLO
+        if (soloButton.getGlobalBounds().contains(sf::Vector2f{ static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y) })) {
+            soloButton.setFillColor(lightGreen);
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+            {
+                startSolo = true;
+            }
+        }
+        else soloButton.setFillColor(darkGreen);
+
+        // Logique bouton MULTI
+        if (multiButton.getGlobalBounds().contains(sf::Vector2f{static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y)})) {
+            multiButton.setFillColor(lightGreen);
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+            {
+                goToMultiMenu = true;
+            }
+        }
+        else multiButton.setFillColor(darkGreen);
+
+        break;
+    case GameState::MULTIPLAYER_MENU:
 
         if (userPortBox.getGlobalBounds().contains(sf::Vector2f{ static_cast<float> (mousePosition.x), static_cast<float> (mousePosition.y) })) {
             userPortBox.setFillColor(gray);
@@ -388,7 +447,7 @@ void World::UserInputWindow::update(sf::RenderWindow* w, GameState g) {
         }
 
         break;
-    case HOST:
+    case GameState::HOST:
 
         if (startServerHostButton.getGlobalBounds().contains(sf::Vector2f{ static_cast<float> (mousePosition.x), static_cast<float> (mousePosition.y) })) {
             startServerHostButton.setFillColor(lightGray);
@@ -429,7 +488,7 @@ void World::UserInputWindow::update(sf::RenderWindow* w, GameState g) {
         }
 
         break;
-    case HOSTING:
+    case GameState::HOSTING:
         if (startGameButton.getGlobalBounds().contains(sf::Vector2f{ static_cast<float> (mousePosition.x), static_cast<float> (mousePosition.y) })) {
             startGameButton.setFillColor(lightGreen);
             if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
