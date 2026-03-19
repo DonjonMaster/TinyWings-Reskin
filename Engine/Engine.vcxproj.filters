@@ -69,9 +69,6 @@
     <ClCompile Include="SpriteRendererComponent.cpp">
       <Filter>Fichiers sources\Components</Filter>
     </ClCompile>
-    <ClCompile Include="ScoreRenderer.cpp">
-      <Filter>Fichiers sources\Components</Filter>
-    </ClCompile>
     <ClCompile Include="TimerComponent.h">
       <Filter>Fichiers d%27en-tête\Components</Filter>
     </ClCompile>
@@ -129,9 +126,6 @@
       <Filter>Fichiers d%27en-tête\Components</Filter>
     </ClInclude>
     <ClInclude Include="CameraComponent.h">
-      <Filter>Fichiers d%27en-tête\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="ScoreRenderer.h">
       <Filter>Fichiers d%27en-tête\Components</Filter>
     </ClInclude>
   </ItemGroup>

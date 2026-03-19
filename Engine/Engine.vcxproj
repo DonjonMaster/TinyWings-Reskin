@@ -84,7 +84,6 @@
     <ClCompile Include="ResourceModule.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneModule.cpp" />
-    <ClCompile Include="ScoreRenderer.cpp" />
     <ClCompile Include="SpriteAnimationRule.h" />
     <ClCompile Include="SpriteRendererComponent.cpp" />
     <ClCompile Include="TimerComponent.h" />
@@ -106,7 +105,6 @@
     <ClInclude Include="ResourceModule.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneModule.h" />
-    <ClInclude Include="ScoreRenderer.h" />
     <ClInclude Include="SpriteRendererComponent.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="StateMachine.h" />
