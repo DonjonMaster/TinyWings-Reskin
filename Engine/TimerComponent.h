@@ -3,17 +3,12 @@
 
 class TimerComponent : public Component {
 public:
-    // Le temps de survie alloué pour chaque surface (en secondes)
-    float hillTimer = 60.0f;
-    float cloudTimer = 60.0f;
-
-    // États mis à jour par le PlayerInput
-    bool isTouchingHill = false;
-    bool isTouchingCloud = false;
-
-    // Sécurité pour ne déclencher la fin qu'une seule fois
+    float hillTimer = 45.0f;
+    float cloudTimer = 45.0f;
     bool isGameOver = false;
 
+    // Permet au Renderer de savoir quelle zone est active
+    bool isInHillZone = true;
+
     void Update(float dt) override;
-    void TriggerGameOver();
 };
