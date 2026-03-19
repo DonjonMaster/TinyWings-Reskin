@@ -9,7 +9,7 @@ void ScoreRenderer::Create()
     font = std::make_unique<sf::Font>();
 
     // SFML 3.0 utilise souvent loadFromFile
-    if (!font->openFromFile("Assets/Fonts/Bangers-Regular.ttf")) {
+    if (!font->openFromFile("Assets/Fonts/HennyPenny-Regular.ttf")) {
         std::cerr << "Erreur : Police non trouvée !" << std::endl;
         return;
     }
