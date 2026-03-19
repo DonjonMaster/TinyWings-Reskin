@@ -39,7 +39,7 @@
     <ClCompile Include="PlayScene.cpp">
       <Filter>Fichiers sources\Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="DebugScene.cpp">
+    <ClCompile Include="MainScene.cpp">
       <Filter>Fichiers sources\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="BaseScene.cpp">

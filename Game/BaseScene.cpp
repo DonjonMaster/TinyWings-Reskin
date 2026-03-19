@@ -12,10 +12,11 @@ GameObject* BaseScene::CreatePlayer()
 	// Ajout des composants physiques et logique
 	player->AddComponent<GravityComponent>();
 	player->AddComponent<InputHandler>(); // Detecte les touches
-	player->AddComponent<SpriteRendererComponent>("Assets/TestPourAnim.png");
+	player->AddComponent<SpriteRendererComponent>("Assets/hamster_qui_roule.png");
 	player->AddComponent<DivingInput>();       // Pilote la gravite progressive
 	player->AddComponent<CameraComponent>();	// Camera
 	player->AddComponent<TimerComponent>();		// Timer
+	player->SetZOrder(800);
 
 	return player;
 }
@@ -38,7 +39,7 @@ GameObject* BaseScene::CreateGhost()
 	ghost->GetTransform().scale = player->GetTransform().scale;
 	ghost->GetTransform().pos = player->GetTransform().pos;
 
-	ghost->AddComponent<SpriteRendererComponent>("Assets/Ghost.png");
-
+	ghost->AddComponent<SpriteRendererComponent>("Assets/hamster_qui_roule2.png");
+	player->SetZOrder(799);
 	return ghost;
 }
