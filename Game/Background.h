@@ -1,31 +1,20 @@
 #pragma once
+#include "Component.h"
 #include <SFML/Graphics.hpp>
-#include <vector>
-#include <memory>
-#include <Component.h>
-#include <GameObject.h>
-#include <Scene.h>
+#include <memory> // Pour std::unique_ptr
+#include <string>
 
-
-
-class BackgroundScroller : public Component
+class Background : public Component
 {
-public:
-    void Create() override;
-    void Render(sf::RenderWindow* window) override;
-
-    void PreloadChunks();
-
 private:
-    struct Layer
-    {
-        std::vector<sf::Texture> textures;
+    std::unique_ptr<sf::Texture> texture;
+    std::unique_ptr<sf::Sprite> sprite;
+    float backgroundHeight = 0.0f;
 
-        // au cas ou on veut superposé des images pour un effet de profondeur 
-        std::vector<std::unique_ptr<sf::Sprite>> activeSprites;
+public:
+    // Constructeur
+    Background(const std::string& texturePath);
 
-        Layer() = default;
-    };
-
-    std::vector<std::unique_ptr<Layer>> layers;
+    void Update(float dt) override;
+    void Render(sf::RenderWindow* window) override;
 };

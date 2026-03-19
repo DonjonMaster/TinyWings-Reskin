@@ -1,13 +1,16 @@
 #include "PlayScene.h"
 #include "../Engine/SpriteRendererComponent.h"
 #include "LevelGenerator.h"
+#include "Background.h"
 
 void PlayScene::Create()
 {
-    // background 
-    auto background = CreateGameObject({ 0.f, 0.f }, "Background");
-    auto backgroundSprite = background->AddComponent<BackgroundScroller>();
-    background->SetZOrder(-10);
+        // BACKGROUND ICI FREROOOOOOOT
+        GameObject* bgObject = CreateGameObject({ 0,0 }, "Background");
+        bgObject->AddComponent<Background>("Assets/Backgrounds/image.png");
+        bgObject->SetZOrder(-100); 
+
+
 
         //// Première colline (Hill 1)
         //GameObject* h = CreateGameObject({ 0, -20 }, "AutoHill");

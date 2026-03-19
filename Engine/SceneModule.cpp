@@ -14,13 +14,13 @@ void SceneModule::Update(float dt)
 
 }
 
-void SceneModule::Render()
+void SceneModule::Render(sf::RenderWindow* window)
 {
 	// 1. On récupère le WindowModule
 	WindowModule* wm = Engine::GetModuleManager()->GetModule<WindowModule>();
 
 	if (wm && wm->GetRenderWindow()) {
-		sf::RenderWindow* window = wm->GetRenderWindow();
+		window = wm->GetRenderWindow();
 
 		// 2. On demande à chaque scène de se dessiner sur cette fenêtre
 		for (Scene* scene : sceneStack) {

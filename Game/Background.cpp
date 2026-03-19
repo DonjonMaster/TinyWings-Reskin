@@ -1,60 +1,61 @@
-#include <iostream>
 #include "Background.h"
+#include "GameObject.h"
+#include "Engine.h"
+#include "WindowModule.h"
+#include "ModuleManager.h"
 
-void BackgroundScroller::Create()
-{
-    PreloadChunks();
-}
+Background::Background(const std::string& texturePath) {
+    texture = std::make_unique<sf::Texture>();
 
-void BackgroundScroller::PreloadChunks()
-{
-    layers.clear();
-    sf::Vector2u windowSize = { 1280, 720 }; // taille de l'ecran
+    if (texture->loadFromFile(texturePath)) {
+        // En SFML 3, on peut créer le sprite directement avec la texture
+        sprite = std::make_unique<sf::Sprite>(*texture);
 
-    // une seule couche
-    for (int layerIndex = 0; layerIndex < 1; layerIndex++)
-    {
-        auto layer = std::make_unique<Layer>();
-        layer->textures.resize(1);
+        sf::Vector2u size = texture->getSize();
+        backgroundHeight = static_cast<float>(size.y);
 
-        std::string path = "Assets/Backgrounds/TestBackground.png";
-        if (!layer->textures[0].loadFromFile(path))
-        {
-            std::cerr << "ERREUR : Impossible de charger " << path << std::endl;
-            continue;
-        }
-
-        auto sprite = std::make_unique<sf::Sprite>(layer->textures[0]);
-
-        // --- Calcul de l'échelle pour remplir l'écran ---
-        sf::Vector2u texSize = layer->textures[0].getSize();
-        float scaleX = (float)windowSize.x / texSize.x;
-        float scaleY = (float)windowSize.y / texSize.y;
-        sprite->setScale(sf::Vector2f(scaleX, scaleY));
-
-        layer->activeSprites.push_back(std::move(sprite));
-        layers.push_back(std::move(layer));
+        // Origine en bas au milieu
+        sprite->setOrigin({ static_cast<float>(size.x) / 2.0f, backgroundHeight });
     }
 }
 
-void BackgroundScroller::Render(sf::RenderWindow* window)
-{
-    if (!window) return;
+void Background::Update(float dt) {
+    if (!sprite) return;
 
-    // sauvegarde de la vue de la caméra qui suit le joueur
-    sf::View currentView = window->getView();
+    auto wm = Engine::GetInstance()->GetModuleManager()->GetModule<WindowModule>();
+    sf::RenderWindow* window = wm->GetRenderWindow();
 
-    window->setView(window->getDefaultView());
+    sf::View view = window->getView();
+    sf::Vector2f viewCenter = view.getCenter();
+    sf::Vector2f viewSize = view.getSize();
 
-    // dessin des couches de fond
-    for (auto& layer : layers)
-    {
-        for (auto& sprite : layer->activeSprites)
-        {
-            if (sprite) window->draw(*sprite);
-        }
+    // --- LE SECRET EST ICI ---
+
+    // 1. Position horizontale : on suit toujours la caméra (pour pas voir les bords)
+    float posX = viewCenter.x;
+
+    // 2. Position verticale : PARALLAXE
+    // Au lieu de suivre viewCenter.y à 100%, on multiplie par un facteur.
+    // 0.0f = Le background ne bouge JAMAIS en Y (fixe dans le monde)
+    // 0.1f = Le background bouge très lentement
+    // 1.0f = Le background suit parfaitement la caméra (ton problème actuel)
+
+    float parallaxFactor = 0.2f; // Ajuste entre 0.1 et 0.5 selon l'effet voulu
+    float posY = viewCenter.y * parallaxFactor;
+
+    // On applique la position
+    // Note : Si tu as mis l'origin en bas, il faudra peut-être ajuster un offset 
+    // pour qu'il commence au niveau du sol au début.
+    sprite->setPosition({ posX, posY });
+
+    // 3. Zoom (on garde ta logique qui fonctionne)
+    float textureWidth = static_cast<float>(texture->getSize().x);
+    float scale = viewSize.x / textureWidth;
+    sprite->setScale({ scale, scale });
+}
+
+void Background::Render(sf::RenderWindow* window) {
+    if (window && sprite) {
+        window->draw(*sprite);
     }
-
-    // restauration de la vue caméra pour dessiner le joueur et les collines par-dessus
-    window->setView(currentView);
 }

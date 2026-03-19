@@ -1,6 +1,7 @@
 #include "Engine.h"
 #include "ModuleManager.h"
 #include "WindowModule.h"
+#include "SFML/Graphics.hpp"
 #include "../Game/Client.h"
 #include "../Game/Server.h"
 #include "../Game/World.h"

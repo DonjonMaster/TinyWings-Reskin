@@ -7,7 +7,7 @@ class WindowModule : public Module
 public:
 	void Create() override;
 	void Update(float dt) override;
-	void Render() override;
+	void Render(sf::RenderWindow* window) override;
 
 	// Récupère la render window du module
 	sf::RenderWindow* GetRenderWindow();

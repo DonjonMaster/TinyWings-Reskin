@@ -27,7 +27,7 @@ void WindowModule::Update(float dt)
 
 }
 
-void WindowModule::Render()
+void WindowModule::Render(sf::RenderWindow* window)
 {
 
     window->display();

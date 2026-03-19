@@ -24,12 +24,14 @@ void ModuleManager::Update(float dt)
 
 }
 
-void ModuleManager::Render()
-{
+void ModuleManager::Render() {
+	auto wm = GetModule<WindowModule>();
+	sf::RenderWindow* window = wm->GetRenderWindow();
 
-	for (Module* module : modules)
-		module->Render();
-
+	for (auto& module : modules) {
+		// Le SceneModule doit recevoir le window pour le passer aux GameObjects
+		module->Render(window);
+	}
 }
 
 void ModuleManager::Destroy()

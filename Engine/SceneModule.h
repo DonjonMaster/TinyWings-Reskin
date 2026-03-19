@@ -13,7 +13,7 @@ class SceneModule : public Module
 public:
 	void Create() override;
 	void Update(float dt) override;
-	void Render() override;
+	void Render(sf::RenderWindow * window) override;
 
 	// Applique une scène (et supprime ceux présent) dans la scene stack
 	void SetScene(std::string name);
