@@ -99,15 +99,29 @@ SlopeData HillComponent::GetSlopeAt(float worldX) {
     sf::Vector2f scale = owner->GetTransform().scale;
     sf::Vector2f pos = owner->GetTransform().pos;
 
+    // Monde -> Local
     float localX = (worldX - pos.x) / scale.x;
 
-    for (const auto& seg : segments) {
+    for (size_t i = 0; i < segments.size(); ++i) {
+        const auto& seg = segments[i];
         float minX = std::min(seg.start.x, seg.end.x);
         float maxX = std::max(seg.start.x, seg.end.x);
 
+        // --- LA MAGIE EST ICI ---
+        // On allonge virtuellement les bords extérieurs du chunk pour créer un chevauchement.
+        // On étire le 1er segment vers la gauche, et le dernier vers la droite.
+        if (i == 0) minX -= 20.0f;
+        if (i == segments.size() - 1) maxX += 20.0f;
+
+        // On vérifie si le joueur est dans cette zone (étirée ou non)
         if (localX >= minX - 0.1f && localX <= maxX + 0.1f) {
             float range = seg.end.x - seg.start.x;
+
+            // Le calcul de l'interpolation
             float t = (std::abs(range) > 0.0001f) ? (localX - seg.start.x) / range : 0.f;
+
+            // Grâce au "clamp", si le joueur est dans la zone étirée (minX-20 ou maxX+20),
+            // la hauteur (Y) restera parfaitement plate. Il n'y aura pas de bosse !
             t = std::clamp(t, 0.f, 1.f);
 
             float localY = seg.start.y + t * (seg.end.y - seg.start.y);
