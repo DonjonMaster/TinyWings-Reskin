@@ -58,16 +58,10 @@ World::World() :
     titleSprite.setScale(sf::Vector2f{ titleScale, titleScale });
     
     // Centrage horizontal et position tout en haut
-    titleSprite.setPosition(sf::Vector2f{ 1200.f / 2.f - (titleTexture.getSize().x * titleScale) / 2.f, 50.f });
+    titleSprite.setPosition(sf::Vector2f{ 1200.f / 2.f - (titleTexture.getSize().x * titleScale) / 2.f, 10.f });
 
 
     // --- TEXTE MULTIJOUEUR ---
-    multiText.setFont(font);
-    multiText.setString("MULTIJOUEUR");
-    // On le positionne par rapport au bouton qu'on va centrer plus bas
-    // (Les valeurs +X et +Y servent à le centrer grossièrement dans la boîte verte)
-    multiText.setPosition(sf::Vector2f{ uiw.multiButton.getPosition().x + 60.f, uiw.multiButton.getPosition().y + 15.f });
-
 	userPort.setStyle(sf::Text::Bold);
 	userPort.setCharacterSize(20);
 	userPort.setString("Enter client port : ");
@@ -213,7 +207,7 @@ void World::render(sf::RenderWindow* window) {
     case GameState::MAIN_MENU:
         window->draw(titleSprite);
         window->draw(uiw.playButtonSprite);
-        window->draw(uiw.multiButton);
+        window->draw(uiw.multiButtonSprite);
         window->draw(multiText);
 
         uiw.update(window, state);
@@ -391,16 +385,34 @@ World::UserInputWindow::UserInputWindow() {
 
     // 3. On le positionne. 
     // Magie : comme l'origine est au centre, la position X est simplement la moitié de l'écran (600) !
-    playButtonSprite.setPosition(sf::Vector2f{ 1200.f / 2.f, 470.f });
+    playButtonSprite.setPosition(sf::Vector2f{ 1000.f / 2.f, 470.f });
 
 
     // --- BOUTON MULTI (Boîte verte) ---
-    multiButton.setSize(sf::Vector2f{ 300.f, 60.f });
+    if (!multiButtonTexture.loadFromFile("Assets/MultiButton.png")) {
+        std::cerr << "Erreur: Impossible de charger MultiButton.png" << std::endl;
+    }
+    multiButtonSprite.setTexture(multiButtonTexture, true);
 
-    // On centre la boîte horizontalement (1200/2 - 300/2 = 450)
-    // Et on la met bien en dessous du bouton Play (Y = 550)
-    multiButton.setPosition(sf::Vector2f{ 1200.f / 2.f - 150.f, 550.f });
-    multiButton.setFillColor(darkGreen);
+    float multiScale = 0.25f;
+    multiButtonSprite.setScale(sf::Vector2f{ multiScale, multiScale });
+
+    // 1. On place l'origine au centre exact de la texture
+    multiButtonSprite.setOrigin(sf::Vector2f{
+        multiButtonTexture.getSize().x / 2.0f,
+        multiButtonTexture.getSize().y / 2.0f
+        });
+
+    // 2. On le pivote (angle négatif = sens anti-horaire)
+    // Note : Puisque tu es sur SFML 3, on précise qu'il s'agit de degrés avec sf::degrees()
+    multiButtonSprite.setRotation(sf::degrees(20.f));
+
+
+
+    // 3. On le positionne. 
+    // Magie : comme l'origine est au centre, la position X est simplement la moitié de l'écran (600) !
+    multiButtonSprite.setPosition(sf::Vector2f{ 1800.f / 2.f - 150.f, 550.f });
+
 }
 
 void World::UserInputWindow::draw(sf::RenderWindow* w) {
@@ -417,23 +429,19 @@ void World::UserInputWindow::update(sf::RenderWindow* w, GameState g) {
     case GameState::MAIN_MENU:
         // Logique bouton SOLO
         if (playButtonSprite.getGlobalBounds().contains(sf::Vector2f{ static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y) })) {
-            playButtonSprite.setColor(lightGreen);
             if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
             {
                 startSolo = true;
             }
         }
-        else playButtonSprite.setColor(darkGreen);
 
         // Logique bouton MULTI
-        if (multiButton.getGlobalBounds().contains(sf::Vector2f{static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y)})) {
-            multiButton.setFillColor(lightGreen);
+        if (multiButtonSprite.getGlobalBounds().contains(sf::Vector2f{static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y)})) {
             if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
             {
                 goToMultiMenu = true;
             }
         }
-        else multiButton.setFillColor(darkGreen);
 
         break;
     case GameState::MULTIPLAYER_MENU:

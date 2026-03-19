@@ -4,10 +4,11 @@
 void GravityComponent::Update(float dt) {
 
     // activé ou desactivé la gravité 
-    if (!enableGravity && sf::Keyboard::isKeyPressed(sf::Keyboard::Key::G)) enableGravity = true;
-    else if (enableGravity && sf::Keyboard::isKeyPressed(sf::Keyboard::Key::G)) enableGravity = false;
+    /*if (!enableGravity && sf::Keyboard::isKeyPressed(sf::Keyboard::Key::G)) enableGravity = true;
+    else if (enableGravity && sf::Keyboard::isKeyPressed(sf::Keyboard::Key::G)) enableGravity = false;*/
 
     // si c'est activé on l'update
+    enableGravity = true;
     if (owner && enableGravity) {
         auto& transform = owner->GetTransform();
 

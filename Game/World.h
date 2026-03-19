@@ -66,8 +66,8 @@ public:
         sf::Texture playButtonTexture;
         sf::Sprite playButtonSprite{ playButtonTexture };
 
-        sf::RectangleShape multiButton;
-
+        sf::Texture multiButtonTexture;
+        sf::Sprite multiButtonSprite{ multiButtonTexture };
 
         sf::Color lightGray{ 200, 200, 200 };
         sf::Color gray{ 152, 156, 155 };
