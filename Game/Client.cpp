@@ -122,6 +122,7 @@ void Client::SendPlayerData() {
 	if (!connected || !world || !world->playerContext.player) return;
 
 	auto& transform = world->playerContext.player->GetTransform();
+	auto& score = world->currentScene->score;
 
 	sf::Packet p;
 	ClientPlayerDataMsg msg{ transform.pos };
