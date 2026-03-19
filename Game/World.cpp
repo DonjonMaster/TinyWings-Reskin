@@ -5,7 +5,6 @@
 #include "SceneModule.h"
 
 World::World() :
-	gameName(font),
 	userPort(font),
 	serverIp(font),
 	serverPort(font),
@@ -20,7 +19,6 @@ World::World() :
 	hostMenuInfo(font),
     startGameText(font),
     waitText(font),
-    soloText(font),
     multiText(font)
 {
 
@@ -35,17 +33,36 @@ World::World() :
 		std::cout << "[WORLD] Failed to load font" << std::endl;
 	}
 
-	uiw = UserInputWindow();
 
-	gameName.setStyle(sf::Text::Bold);
-	gameName.setCharacterSize(50);
-	gameName.setString("Tiny Wings");
-	gameName.setPosition(sf::Vector2f{ 410, 50 });
+    if (!titleTexture.loadFromFile("Assets/Titre.png")) {
+        std::cerr << "Erreur: Impossible de charger Titre.png" << std::endl;
+    }
+   // --- TITRE ---
+    if (!titleTexture.loadFromFile("Assets/Titre.png")) {
+        std::cerr << "Erreur: Impossible de charger Titre.png" << std::endl;
+    }
+    titleSprite.setTexture(titleTexture, true);
+    
+    // On réduit beaucoup l'échelle (à ajuster selon tes goûts, ex: 0.3f = 30% de la taille de base)
+    float titleScale = 0.3f; 
+    titleSprite.setScale(sf::Vector2f{ titleScale, titleScale });
+    
+    // Centrage horizontal et position tout en haut
+    titleSprite.setPosition(sf::Vector2f{ 1200.f / 2.f - (titleTexture.getSize().x * titleScale) / 2.f, 50.f });
+
+
+    // --- TEXTE MULTIJOUEUR ---
+    multiText.setFont(font);
+    multiText.setString("MULTIJOUEUR");
+    // On le positionne par rapport au bouton qu'on va centrer plus bas
+    // (Les valeurs +X et +Y servent à le centrer grossièrement dans la boîte verte)
+    multiText.setPosition(sf::Vector2f{ uiw.multiButton.getPosition().x + 60.f, uiw.multiButton.getPosition().y + 15.f });
 
 	userPort.setStyle(sf::Text::Bold);
 	userPort.setCharacterSize(20);
 	userPort.setString("Enter client port : ");
 	userPort.setPosition(sf::Vector2f{ uiw.userPortBox.getPosition().x, 200 });
+
 
 	serverIp.setStyle(sf::Text::Bold);
 	serverIp.setCharacterSize(20);
@@ -99,23 +116,29 @@ World::World() :
 	hostMenuInfo.setPosition(sf::Vector2f{ 275, 400 });
 	hostMenuInfo.setString("Le serveur est en cours d'�xecution. Fermez la fen�tre pour fermer le serveur");
 
-    startGameText.setStyle(sf::Text::Bold);
-    startGameText.setCharacterSize(20);
-    startGameText.setPosition(sf::Vector2f{ uiw.startGameButton.getPosition().x + 22, uiw.startGameButton.getPosition().y + 12 });
-    startGameText.setString("START GAME");
-
     waitText.setStyle(sf::Text::Bold);
     waitText.setCharacterSize(30);
     waitText.setPosition(sf::Vector2f{ 200.f, 300.f });
     waitText.setString("En attente du serveur");
 
-    soloText.setFont(font);
-    soloText.setString("SOLO");
-    soloText.setPosition({ uiw.soloButton.getPosition().x + 22, uiw.soloButton.getPosition().y + 12});
+    // --- TEXTE START GAME (Menu HOSTING) ---
+    startGameText.setString("START GAME");
+    startGameText.setCharacterSize(25); // Tu peux ajuster la taille
 
-    multiText.setFont(font);
-    multiText.setString("MULTIJOUEUR");
-    multiText.setPosition({ uiw.multiButton.getPosition().x, uiw.multiButton.getPosition().y + 12});
+    // On récupère les dimensions du texte
+    sf::FloatRect startBounds = startGameText.getLocalBounds();
+
+    // On place l'origine au centre du texte
+    startGameText.setOrigin(sf::Vector2f{
+        startBounds.position.x + startBounds.size.x / 2.0f,
+        startBounds.position.y + startBounds.size.y / 2.0f
+        });
+
+    // On place le texte exactement au centre du startGameButton
+    startGameText.setPosition(sf::Vector2f{
+        uiw.startGameButton.getPosition().x + uiw.startGameButton.getSize().x / 2.0f,
+        uiw.startGameButton.getPosition().y + uiw.startGameButton.getSize().y / 2.0f
+        });
 }
 
 void World::update(float dt) {
@@ -172,16 +195,14 @@ void World::update(float dt) {
 void World::render(sf::RenderWindow* window) {
     switch (state) {
     case GameState::MAIN_MENU:
-        window->draw(uiw.soloButton);
+        window->draw(titleSprite);
+        window->draw(uiw.playButtonSprite);
         window->draw(uiw.multiButton);
-        window->draw(soloText);
         window->draw(multiText);
 
         uiw.update(window, state);
         break;
     case GameState::MULTIPLAYER_MENU:
-        window->draw(gameName);
-
         window->draw(userPort);
         window->draw(serverIp);
         window->draw(serverPort);
@@ -211,8 +232,8 @@ void World::render(sf::RenderWindow* window) {
         break;
     case GameState::HOSTING:
         uiw.update(window, state);
-        window->draw(uiw.startGameButton);
 
+        window->draw(uiw.startGameButton);
         window->draw(serverIpText);
         window->draw(serverPortDisplay);
         window->draw(hostMenuInfo);
@@ -325,17 +346,44 @@ World::UserInputWindow::UserInputWindow() {
 	goBackButton.setPosition(sf::Vector2f{ 100, 200 });
 	goBackButton.setFillColor(darkGreen);
 
-    startGameButton.setSize(sf::Vector2f{ 200, 50 });
-    startGameButton.setPosition(sf::Vector2f{ 500, 500 });
-    startGameButton.setFillColor(sf::Color::Green);
+    // --- BOUTON START GAME (Menu HOSTING) ---
+    startGameButton.setSize(sf::Vector2f{ 300.f, 60.f });
+    // On le centre horizontalement, et on le place en bas (ex: Y = 600)
+    startGameButton.setPosition(sf::Vector2f{ 1200.f / 2.f - 150.f, 620.f });
+    startGameButton.setFillColor(darkGreen);
+
+    // --- BOUTON PLAY ---
+    if (!playButtonTexture.loadFromFile("Assets/PlayButton.png")) {
+        std::cerr << "Erreur: Impossible de charger PlayButton.png" << std::endl;
+    }
+    playButtonSprite.setTexture(playButtonTexture, true);
+
+    float playScale = 0.25f;
+    playButtonSprite.setScale(sf::Vector2f{ playScale, playScale });
+
+    // 1. On place l'origine au centre exact de la texture
+    playButtonSprite.setOrigin(sf::Vector2f{
+        playButtonTexture.getSize().x / 2.0f,
+        playButtonTexture.getSize().y / 2.0f
+        });
+
+    // 2. On le pivote (angle négatif = sens anti-horaire)
+    // Note : Puisque tu es sur SFML 3, on précise qu'il s'agit de degrés avec sf::degrees()
+    playButtonSprite.setRotation(sf::degrees(20.f));
+
+    
+
+    // 3. On le positionne. 
+    // Magie : comme l'origine est au centre, la position X est simplement la moitié de l'écran (600) !
+    playButtonSprite.setPosition(sf::Vector2f{ 1200.f / 2.f, 470.f });
 
 
-    soloButton.setSize({ 300, 60 });
-    soloButton.setPosition({ 400, 250 });
-    soloButton.setFillColor(darkGreen);
+    // --- BOUTON MULTI (Boîte verte) ---
+    multiButton.setSize(sf::Vector2f{ 300.f, 60.f });
 
-    multiButton.setSize({ 300, 60 });
-    multiButton.setPosition({ 400, 350 });
+    // On centre la boîte horizontalement (1200/2 - 300/2 = 450)
+    // Et on la met bien en dessous du bouton Play (Y = 550)
+    multiButton.setPosition(sf::Vector2f{ 1200.f / 2.f - 150.f, 550.f });
     multiButton.setFillColor(darkGreen);
 }
 
@@ -352,14 +400,14 @@ void World::UserInputWindow::update(sf::RenderWindow* w, GameState g) {
     switch (g) {
     case GameState::MAIN_MENU:
         // Logique bouton SOLO
-        if (soloButton.getGlobalBounds().contains(sf::Vector2f{ static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y) })) {
-            soloButton.setFillColor(lightGreen);
+        if (playButtonSprite.getGlobalBounds().contains(sf::Vector2f{ static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y) })) {
+            playButtonSprite.setColor(lightGreen);
             if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
             {
                 startSolo = true;
             }
         }
-        else soloButton.setFillColor(darkGreen);
+        else playButtonSprite.setColor(darkGreen);
 
         // Logique bouton MULTI
         if (multiButton.getGlobalBounds().contains(sf::Vector2f{static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y)})) {
@@ -489,6 +537,7 @@ void World::UserInputWindow::update(sf::RenderWindow* w, GameState g) {
 
         break;
     case GameState::HOSTING:
+        // On utilise startGameButton au lieu de playButtonSprite
         if (startGameButton.getGlobalBounds().contains(sf::Vector2f{ static_cast<float> (mousePosition.x), static_cast<float> (mousePosition.y) })) {
             startGameButton.setFillColor(lightGreen);
             if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {

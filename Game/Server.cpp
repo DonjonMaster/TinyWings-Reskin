@@ -154,15 +154,14 @@ void Server::HandlePlayerData(sf::Packet& packet, const std::string& senderKey) 
 		sf::Packet outPacket;
 		outPacket << outMsg;
 
-		//pendingPositions[senderKey] = msg.position;
+		pendingPositions[senderKey] = msg.position;
 
 		std::cout << "[SERVER][RECV] PLAYER_DATA from " << senderKey
 			<< " -> (" << msg.position.x << ", " << msg.position.y << ", " << msg.score << ")" << std::endl;
-
-		SendToOthers(senderKey, outPacket);
+		SendToEveryone(outPacket);
 	} else {
 		std::cout << "[SERVER][RECV] PLAYER_DATA from " << senderKey
-			<< ": failed to extract position" << ", " << msg.score << std::endl;
+			<< ": failed to extract position" << std::endl;
 	}
 }
 

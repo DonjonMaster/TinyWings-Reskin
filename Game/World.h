@@ -25,6 +25,9 @@ public:
 
     bool hosting = false;
 
+    sf::Texture titleTexture;
+    sf::Sprite titleSprite{ titleTexture };
+
 	World();
 	~World();
 
@@ -54,11 +57,11 @@ public:
         sf::RectangleShape hostButton;
         sf::RectangleShape startServerHostButton;
         sf::RectangleShape goBackButton;
-        
         sf::RectangleShape startGameButton;
+        
+        sf::Texture playButtonTexture;
+        sf::Sprite playButtonSprite{ playButtonTexture };
 
-
-        sf::RectangleShape soloButton;
         sf::RectangleShape multiButton;
 
 
@@ -86,7 +89,6 @@ public:
 
     sf::Font font;
 
-    sf::Text gameName;
     sf::Text userPort;
     sf::Text serverIp;
     sf::Text serverPort;
@@ -104,7 +106,6 @@ public:
     sf::Text startGameText;
     sf::Text waitText;
 
-    sf::Text soloText;
     sf::Text multiText;
 
     std::string userPortInput{};

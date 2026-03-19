@@ -95,7 +95,7 @@ void PlayScene::Update(float dt)
         if (currentY < -300.f) currentGhostScore += score;
         if (currentY < -600.f) currentGhostScore += score * 1.5f;
         if (currentY < -900.f) currentGhostScore += score * 2.f;
-        std::cout << "Score : " << currentGhostScore << " posY : " << currentY << std::endl;
+        std::cout << "Ghost Score : " << currentGhostScore << " Ghost posY : " << currentY << std::endl;
     }
 
 }

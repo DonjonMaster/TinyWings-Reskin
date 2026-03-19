@@ -98,11 +98,13 @@ void Client::HandlePlayerData(sf::Packet& p) {
 	ServerPlayerDataMsg msg;
 	if (p >> msg) {
 		std::cout << "[CLIENT][RECV] PLAYER_DATA from " << msg.senderKey
-			<< " -> (" << msg.position.x << ", " << msg.position.y << ")" << std::endl;
+			<< " -> (" << msg.position.x << ", " << msg.position.y << ", " << msg.score << ")" << std::endl;
 
+		std::cout << std::endl << std::endl << msg.score << std::endl << std::endl;
 		// Update the ghost (remote player) position in the scene.
 		if (world->currentScene) {
 			world->currentScene->UpdatePos(msg.position);
+			world->currentScene->currentGhostScore = msg.score;
 		}
 	}
 }
@@ -122,10 +124,10 @@ void Client::SendPlayerData() {
 	if (!connected || !world || !world->playerContext.player) return;
 
 	auto& transform = world->playerContext.player->GetTransform();
-	auto& score = world->currentScene->score;
+	auto& score = world->currentScene->currentScore;
 
 	sf::Packet p;
-	ClientPlayerDataMsg msg{ transform.pos };
+	ClientPlayerDataMsg msg{ transform.pos, score };
 	p << msg;
 
 	if (socket.send(p, serverIp, serverPort) != sf::Socket::Status::Done) {
