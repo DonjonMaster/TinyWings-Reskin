@@ -60,7 +60,7 @@ void PlayScene::Create()
 
 // un update pour faire le score
 void PlayScene::Update(float dt)
-{
+{ 
     BaseScene::Update(dt);
 
     // je recupere le joueur 
