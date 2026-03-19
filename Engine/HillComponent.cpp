@@ -30,39 +30,48 @@ void HillComponent::InitFromImage(const std::string& texturePath, int precision)
 
     sf::Vector2u size = image.getSize();
 
-    // On va stocker des groupes de points séparés par du vide
     std::vector<std::vector<sf::Vector2f>> pointGroups;
     std::vector<sf::Vector2f> currentGroup;
 
-    for (unsigned int x = 0; x < size.x; x += precision) {
+    // CORRECTION ICI : On va jusqu'à size.x INCLUS pour sceller parfaitement le bord
+    for (unsigned int x = 0; x <= size.x; x += precision) {
+
+        // Si on est sur le pixel imaginaire du bord (size.x), on lit le dernier vrai pixel de l'image (size.x - 1)
+        unsigned int pixelX = std::min(x, size.x - 1);
+
         bool foundPixelInColumn = false;
         for (unsigned int y = 0; y < size.y; ++y) {
             // Si le pixel est opaque (seuil à 128)
-            if (image.getPixel({ x, y }).a > 128) {
+            if (image.getPixel({ pixelX, y }).a > 128) {
+                // On enregistre à la coordonnée `x` (qui peut valoir exactement size.x)
                 currentGroup.push_back({ (float)x, (float)y });
                 foundPixelInColumn = true;
-                break; // On ne prend que le pixel le plus haut de la colonne
+                break;
             }
         }
 
-        // Si on n'a rien trouvé dans cette colonne et que le groupe actuel n'est pas vide
-        // Cela signifie qu'on vient de quitter un nuage/une île
         if (!foundPixelInColumn && !currentGroup.empty()) {
             if (currentGroup.size() >= 2) {
                 pointGroups.push_back(currentGroup);
             }
             currentGroup.clear();
         }
+
+        // Astuce : Si notre 'precision' (ex: 10) fait qu'on allait rater le bord exact de l'image,
+        // On force la prochaine itération à tomber PILE sur le bord (size.x).
+        if (x < size.x && x + precision > size.x) {
+            x = size.x - precision;
+        }
     }
-    // Ne pas oublier le dernier groupe si l'image finit sur du solide
+
+    // Ne pas oublier le dernier groupe
     if (currentGroup.size() >= 2) {
         pointGroups.push_back(currentGroup);
     }
 
-    // Génération des segments pour chaque groupe de manière isolée
+    // Génération des segments pour chaque groupe
     for (auto& pts : pointGroups) {
         std::vector<sf::Vector2f> ctrl = pts;
-        // Ajout de points de contrôle pour Catmull-Rom
         ctrl.insert(ctrl.begin(), pts.front());
         ctrl.push_back(pts.back());
 
@@ -83,7 +92,6 @@ void HillComponent::InitFromImage(const std::string& texturePath, int precision)
     }
 }
 
-// Définition de GetSlopeAt (assure-toi qu'elle est bien ici !)
 SlopeData HillComponent::GetSlopeAt(float worldX) {
     SlopeData data;
     if (!owner) return data;
@@ -91,7 +99,6 @@ SlopeData HillComponent::GetSlopeAt(float worldX) {
     sf::Vector2f scale = owner->GetTransform().scale;
     sf::Vector2f pos = owner->GetTransform().pos;
 
-    // Monde -> Local
     float localX = (worldX - pos.x) / scale.x;
 
     for (const auto& seg : segments) {
@@ -130,35 +137,29 @@ sf::Vector2f HillComponent::GetWorldPos(sf::Vector2f localPos) const {
 void HillComponent::Render(sf::RenderWindow* window) {
     if (!owner) return;
 
-    // 1. Dessin du Sprite (Image de fond) - Toujours affiché !
     if (hasImage && sprite) {
         sprite->setPosition(owner->GetTransform().pos);
         sprite->setScale(owner->GetTransform().scale);
         window->draw(*sprite);
     }
 
-    // 2. Debug : Hitbox et Zone de capture - Affiché QUE si showDebugCollision est vrai
     if (showDebugCollision) {
-        float lineThickness = 4.0f; // La petite ligne de surface
+        float lineThickness = 4.0f;
 
         for (const auto& seg : segments) {
             sf::Vector2f wS = GetWorldPos(seg.start);
             sf::Vector2f wE = GetWorldPos(seg.end);
 
-            // Couleur de la ligne de surface (Rouge = Montée, Bleu = Descente)
             sf::Color surfaceCol = (seg.type == SlopeType::UP) ? sf::Color::Red : sf::Color::Blue;
-
-            // --- LA ZONE DE COLLISION (Le bloc transparent) ---
             sf::Color zoneCol = sf::Color(255, 0, 0, 50);
 
             sf::Vertex thicknessZone[] = {
-                sf::Vertex(wS, zoneCol),                                        // Haut Gauche
-                sf::Vertex(wE, zoneCol),                                        // Haut Droite
-                sf::Vertex(wE + sf::Vector2f(0.f, collisionThickness), zoneCol), // Bas Droite
-                sf::Vertex(wS + sf::Vector2f(0.f, collisionThickness), zoneCol)  // Bas Gauche
+                sf::Vertex(wS, zoneCol),
+                sf::Vertex(wE, zoneCol),
+                sf::Vertex(wE + sf::Vector2f(0.f, collisionThickness), zoneCol),
+                sf::Vertex(wS + sf::Vector2f(0.f, collisionThickness), zoneCol)
             };
 
-            // --- LA LIGNE DE SURFACE (La ligne fine de 4px) ---
             sf::Vertex line[] = {
                 sf::Vertex(wS, surfaceCol),
                 sf::Vertex(wS + sf::Vector2f(0.f, lineThickness), surfaceCol),
@@ -166,7 +167,6 @@ void HillComponent::Render(sf::RenderWindow* window) {
                 sf::Vertex(wE + sf::Vector2f(0.f, lineThickness), surfaceCol)
             };
 
-            // On dessine d'abord la zone, puis la ligne par-dessus
             window->draw(thicknessZone, 4, sf::PrimitiveType::TriangleStrip);
             window->draw(line, 4, sf::PrimitiveType::TriangleStrip);
         }
