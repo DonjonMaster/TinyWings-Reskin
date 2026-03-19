@@ -1,7 +1,10 @@
 #include "PlayScene.h"
 #include "../Engine/SpriteRendererComponent.h"
+#include "Engine.h"
 #include "LevelGenerator.h"
 #include "Background.h"
+#include "TimerRenderer.h"
+#include "TimerComponent.h"
 #include <ScoreRenderer.h>
 
 void PlayScene::Create()
@@ -55,6 +58,11 @@ void PlayScene::Create()
 
     // On l'initialise en lui donnant le joueur � suivre
     generator->Init(player);
+
+
+    GameObject* uiManager = CreateGameObject({ 0.f, 0.f }, "UIManager");
+    uiManager->AddComponent<TimerRenderer>();
+    uiManager->SetZOrder(100);
 }
 
 
@@ -75,6 +83,19 @@ void PlayScene::Update(float dt)
     // si il existe 
     if (player)
     {
+
+        auto* timers = player->GetComponent<TimerComponent>();
+
+        // C'est ici qu'on utilise le booléen !
+        if (timers && timers->isGameOver)
+        {
+            std::cout << "Fermeture du jeu suite au Game Over..." << std::endl;
+
+
+            Engine::GetInstance()->Quit();
+        }
+
+
         // on recup sa pos et augemente le score en cons�quence
         float currentY = player->GetTransform().pos.y;
 

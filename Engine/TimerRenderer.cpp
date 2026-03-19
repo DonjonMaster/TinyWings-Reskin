@@ -8,18 +8,22 @@
 
 void TimerRenderer::Create()
 {
-    font = std::make_shared<sf::Font>();
+    // Initialisation manuelle
+    font = std::make_unique<sf::Font>();
 
-    if (!font->openFromFile("Assets/Fonts/Bangers-Regular.ttf")) {
-        std::cerr << "Erreur : Police non trouvée pour les timers !" << std::endl;
+    // On utilise la même police que ton ScoreRenderer
+    if (!font->openFromFile("Assets/Fonts/HennyPenny-Regular.ttf")) {
+        std::cerr << "Erreur : Police non trouvée !" << std::endl;
         return;
     }
 
-    mainText = std::make_shared<sf::Text>(*font);
+    // Création du texte principal
+    mainText = std::make_unique<sf::Text>(*font);
     mainText->setCharacterSize(70);
     mainText->setOutlineThickness(3.f);
 
-    subText = std::make_shared<sf::Text>(*font);
+    // Création du texte secondaire
+    subText = std::make_unique<sf::Text>(*font);
     subText->setCharacterSize(40);
     subText->setOutlineThickness(2.f);
     subText->setFillColor(sf::Color(180, 180, 180));
@@ -30,6 +34,7 @@ void TimerRenderer::Render(sf::RenderWindow* window)
 {
     if (!window || !owner || !owner->GetScene() || !mainText || !subText) return;
 
+    // Récupération du joueur
     GameObject* player = nullptr;
     for (auto* obj : owner->GetScene()->GetGameObjects()) {
         if (obj->GetName() == "Player") {
@@ -40,9 +45,11 @@ void TimerRenderer::Render(sf::RenderWindow* window)
 
     if (!player) return;
 
+    // Récupération des timers
     auto* timers = player->GetComponent<TimerComponent>();
     if (!timers) return;
 
+    // Logique d'affichage selon ce qu'on touche
     if (timers->isTouchingHill) {
         isHillMain = true;
     }
@@ -69,15 +76,16 @@ void TimerRenderer::Render(sf::RenderWindow* window)
         subText->setString(hillStream.str());
     }
 
+    // Centrage à l'écran
     float windowWidth = static_cast<float>(window->getSize().x);
 
-    // SFML 3 : .size.x et sf::Vector2f
     sf::FloatRect mainBounds = mainText->getLocalBounds();
-    mainText->setPosition(sf::Vector2f((windowWidth / 2.0f) - (mainBounds.size.x / 2.0f), 20.0f));
+    mainText->setPosition({ (windowWidth / 2.0f) - (mainBounds.size.x / 2.0f), 20.0f });
 
     sf::FloatRect subBounds = subText->getLocalBounds();
-    subText->setPosition(sf::Vector2f((windowWidth / 2.0f) - (subBounds.size.x / 2.0f), 100.0f));
+    subText->setPosition({ (windowWidth / 2.0f) - (subBounds.size.x / 2.0f), 100.0f });
 
+    // Affichage en vue fixe
     sf::View currentView = window->getView();
     window->setView(window->getDefaultView());
 
