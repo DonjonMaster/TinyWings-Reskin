@@ -33,10 +33,20 @@ World::World() :
 		std::cout << "[WORLD] Failed to load font" << std::endl;
 	}
 
-
-    if (!titleTexture.loadFromFile("Assets/Titre.png")) {
+    // fond 
+    if (!menuBackgroundTexture.loadFromFile("Assets/Backgrounds/bgTitle.png")) {
         std::cerr << "Erreur: Impossible de charger Titre.png" << std::endl;
     }
+    menuBackgroundSprite.setTexture(menuBackgroundTexture, true);
+    sf::Vector2u textureSize = menuBackgroundTexture.getSize();
+
+    // taille de l'ecran 
+    float scaleX = 1280.f / textureSize.x;
+    float scaleY = 720.f / textureSize.y;
+
+    // j'applique la taille de l'ecran au truc
+    menuBackgroundSprite.setScale(sf::Vector2f{ scaleX, scaleY });
+
    // --- TITRE ---
     if (!titleTexture.loadFromFile("Assets/Titre.png")) {
         std::cerr << "Erreur: Impossible de charger Titre.png" << std::endl;
@@ -193,6 +203,12 @@ void World::update(float dt) {
 
 
 void World::render(sf::RenderWindow* window) {
+
+    // fond a appliquer partout 
+    if (menuBackgroundTexture.getSize().x > 0) {
+        window->draw(menuBackgroundSprite);
+    }
+
     switch (state) {
     case GameState::MAIN_MENU:
         window->draw(titleSprite);
