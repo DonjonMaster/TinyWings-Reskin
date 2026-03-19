@@ -14,25 +14,24 @@ la bibliothèque **SFML 3.0.2.**
 
 ## **Objectifs**
 
-La mécanique Tiny Wings est un jeu de vitesse & d\'adresse : parcourir
-un décor vallonné en allant le plus vite et loin possible, <ins>tout en
-esquivant les différents obstacles présents dans la map
+La mécanique Tiny Wings est un jeu de vitesse et d\'adresse : parcourir
+un décor vallonné en allant le plus vite et loin possible, <ins> en essayant d'aller le plus haut possible, afin d'atteindre les nuages, puis l'espace 
 ***(fonctionnalité ajouté)***.</ins>
 
 ## **Contrôles du joueur**
 
-Le joueur peut accélérer sa chute *(**ESPACE**)* pour prendre en
+Le joueur peut accélérer sa chute *(**ESPACE**)* pour prendre de la
 vitesse.
 
 ## **Conditions victoire/défaite**
 
 ### Condition de victoire : 
 
-Le joueur doit avoir obtenu un score assez élevé.
+Avoir le meilleur score.
 
 ### Condition de défaite :
 
-Dépasse le temps établi.
+Dépasse le temps établi (**45** secondes dans les collines, **45** secondes dans les nuages).
 
 ---
 
@@ -47,27 +46,20 @@ caméra sera constamment **centré sur le joueur**.
 
 ### Joueur : 
 
-Un oiseau.
+Un hamster qui roule.
 
 ## **Background**
 
-Un arrière-plan du ciel, afin de se centrer que sur le premier plan.
-
-Arrière plan avec défilement parallaxe horizontal
+Un arrière-plan d'une foret, du ciel, et de l'espace.
 
 ## **Menus**
 
--   Démarrage
+-   Menu principal
 
--   Options
-
-    -   Paramétrage du son
-
-    -   Paramétrage de la résolution
-
--   Pause
-
-    -   Options
+    - Multijoueur
+    
+        - Client (rejoindre host)
+        - Serveur (host)
 
 ---
 
