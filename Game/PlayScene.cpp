@@ -11,7 +11,7 @@ void PlayScene::Create()
 {
         // BACKGROUND ICI FREROOOOOOOT
         GameObject* bgObject = CreateGameObject({ 0,0 }, "Background");
-        bgObject->AddComponent<Background>("Assets/Backgrounds/tata.jpg");
+        bgObject->AddComponent<Background>("Assets/Backgrounds/background_final_zoom.jpg");
         bgObject->SetZOrder(-100); 
 
         //// Premire colline (Hill 1)
