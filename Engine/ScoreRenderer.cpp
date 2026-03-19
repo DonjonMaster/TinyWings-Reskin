@@ -17,7 +17,7 @@ void ScoreRenderer::Create()
     // On crée le texte en lui passant la police (obligatoire en SFML 3)
     text = std::make_unique<sf::Text>(*font);
     text->setCharacterSize(40);
-    text->setFillColor(sf::Color::Red);
+    text->setFillColor(sf::Color::Yellow);
     text->setOutlineColor(sf::Color::Yellow);
     text->setOutlineThickness(2.f);
     text->setPosition({ 20.f, 20.f });
