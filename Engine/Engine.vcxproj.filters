@@ -72,6 +72,9 @@
     <ClCompile Include="ScoreRenderer.cpp">
       <Filter>Fichiers sources\Components</Filter>
     </ClCompile>
+    <ClCompile Include="TimerComponent.h">
+      <Filter>Fichiers d%27en-tête\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine.h">

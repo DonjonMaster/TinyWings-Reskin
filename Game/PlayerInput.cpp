@@ -3,7 +3,8 @@
 #include "Constants.h"
 #include "GravityComponent.h"
 #include "InputHandler.h"
-#include "HillComponent.h"   
+#include "HillComponent.h"  
+#include "TimerComponent.h"
 #include <Scene.h>            
 #include <iostream>
 #include <algorithm>
@@ -21,6 +22,13 @@ void DivingInput::Update(float dt) {
     auto* grav = owner->GetComponent<GravityComponent>();
     auto& transform = owner->GetTransform();
     if (!input || !grav) return;
+
+    // --- MISE À JOUR DES TIMERS (RÉINITIALISATION) ---
+    auto* timers = owner->GetComponent<TimerComponent>();
+    if (timers) {
+        timers->isTouchingHill = false;
+        timers->isTouchingCloud = false;
+    }
 
     bool isPressed = input->IsActionPressed();
 
@@ -49,6 +57,9 @@ void DivingInput::Update(float dt) {
         SlopeType bestSlopeType = SlopeType::UP;
         bool foundGroundThisFrame = false;
         float minDistance = 999999.0f;
+
+        // récupération du chunk qu'on touche
+        GameObject* bestSurfaceObject = nullptr;
 
         float prevX = transform.pos.x - (transform.velocity.x * dt);
         float prevY = transform.pos.y - (transform.velocity.y * dt);
@@ -102,6 +113,7 @@ void DivingInput::Update(float dt) {
                             if (bestSlopeDir.x < 0) bestSlopeDir = -bestSlopeDir;
                             bestSlopeType = seg.type;
                             foundGroundThisFrame = true;
+                            bestSurfaceObject = obj;
                         }
                     }
                 }
@@ -112,6 +124,16 @@ void DivingInput::Update(float dt) {
         if (foundGroundThisFrame) {
             transform.pos.y = bestSurfaceY;
             isGrounded = true;
+
+            if (timers && bestSurfaceObject) {
+                std::string objName = bestSurfaceObject->GetName();
+                if (objName == "HillChunk") {
+                    timers->isTouchingHill = true;
+                }
+                else if (objName == "CloudChunk") {
+                    timers->isTouchingCloud = true;
+                }
+            }
 
             float speed = std::sqrt(transform.velocity.x * transform.velocity.x + transform.velocity.y * transform.velocity.y);
 

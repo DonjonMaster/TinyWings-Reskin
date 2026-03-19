@@ -1,5 +1,6 @@
 ﻿#include "BaseScene.h"
 #include "CameraComponent.h"
+#include "TimerComponent.h"
 
 GameObject* BaseScene::CreatePlayer()
 {
@@ -14,6 +15,7 @@ GameObject* BaseScene::CreatePlayer()
 	player->AddComponent<SpriteRendererComponent>("Assets/TestPourAnim.png");
 	player->AddComponent<DivingInput>();       // Pilote la gravite progressive
 	player->AddComponent<CameraComponent>();	// Camera
+	player->AddComponent<TimerComponent>();		// Timer
 
 	return player;
 }

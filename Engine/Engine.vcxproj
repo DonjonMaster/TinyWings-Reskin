@@ -87,6 +87,7 @@
     <ClCompile Include="ScoreRenderer.cpp" />
     <ClCompile Include="SpriteAnimationRule.h" />
     <ClCompile Include="SpriteRendererComponent.cpp" />
+    <ClCompile Include="TimerComponent.h" />
     <ClCompile Include="WindowModule.cpp">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
