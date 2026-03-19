@@ -10,6 +10,7 @@ class Scene;
 
 enum class GameState {
     MAIN_MENU = 0,
+    MULTIPLAYER_MENU,
     PLAYING,
     HOST,
     HOSTING,
