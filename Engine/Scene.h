@@ -27,6 +27,7 @@ public:
 
 	//score actuel 
 	float currentScore = 0.f;
+	float currentGhostScore = 0.f;
 	//score additionel 
 	float score = 0.1f;
 

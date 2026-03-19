@@ -10,9 +10,7 @@ void PlayScene::Create()
         bgObject->AddComponent<Background>("Assets/Backgrounds/image.png");
         bgObject->SetZOrder(-100); 
 
-
-
-        //// Premi�re colline (Hill 1)
+        //// Premire colline (Hill 1)
         //GameObject* h = CreateGameObject({ 0, -20 }, "AutoHill");
         //h->GetTransform().scale = { 8.0f, 8.0f };
         //auto* hill = h->AddComponent<HillComponent>();
@@ -21,7 +19,7 @@ void PlayScene::Create()
         //hill->isOneWay = false; // Sol solide
 
 
-    // ici je peux cr�er le joueur grace au create player init dans le base scene (on peut toujours mettre les autres elements egalement)
+    // ici je peux crer le joueur grace au create player init dans le base scene (on peut toujours mettre les autres elements egalement)
     GameObject* player = CreatePlayer();
     player->SetZOrder(10);
 
@@ -77,6 +75,27 @@ void PlayScene::Update(float dt)
         if (currentY < -600.f) currentScore += score * 1.5f;
         if (currentY < -900.f) currentScore += score * 2.f;
         std::cout << "Score : " << currentScore << " posY : " << currentY << std::endl;
+    }
+
+    // ghost 
+    GameObject* ghost = nullptr;
+    for (auto* obj : GetGameObjects()) {
+        if (obj->GetName() == "Ghost") {
+            ghost = obj;
+            break;
+        }
+    }
+
+    if (ghost)
+    {
+        // on recup sa pos et augemente le score en cons�quence
+        float currentY = ghost->GetTransform().pos.y;
+
+        // score selon la hauteur
+        if (currentY < -300.f) currentGhostScore += score;
+        if (currentY < -600.f) currentGhostScore += score * 1.5f;
+        if (currentY < -900.f) currentGhostScore += score * 2.f;
+        std::cout << "Score : " << currentGhostScore << " posY : " << currentY << std::endl;
     }
 
 }
