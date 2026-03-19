@@ -60,14 +60,17 @@
     <ClCompile Include="ResourceModule.cpp">
       <Filter>Fichiers sources\Modules</Filter>
     </ClCompile>
-    <ClCompile Include="SpriteRendererComponent.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="HillComponent.cpp">
       <Filter>Fichiers sources\Components</Filter>
     </ClCompile>
     <ClCompile Include="SpriteAnimationRule.h">
       <Filter>Fichiers d%27en-tête</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteRendererComponent.cpp">
+      <Filter>Fichiers sources\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ScoreRenderer.cpp">
+      <Filter>Fichiers sources\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -123,6 +126,9 @@
       <Filter>Fichiers d%27en-tête\Components</Filter>
     </ClInclude>
     <ClInclude Include="CameraComponent.h">
+      <Filter>Fichiers d%27en-tête\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ScoreRenderer.h">
       <Filter>Fichiers d%27en-tête\Components</Filter>
     </ClInclude>
   </ItemGroup>
