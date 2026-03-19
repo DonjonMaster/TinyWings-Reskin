@@ -52,15 +52,16 @@ inline sf::Packet& operator>>(sf::Packet& p, ConnectionMsg& m) {
 // The server identifies the sender via the UDP source ip:port.
 struct ClientPlayerDataMsg {
 	sf::Vector2f position{ 0.f, 0.f };
+	float score{ 0.f };
 };
 
 inline sf::Packet& operator<<(sf::Packet& p, const ClientPlayerDataMsg& m) {
 	return p << Settings::PacketTypes::PLAYER_DATA
-		<< m.position.x << m.position.y;
+		<< m.position.x << m.position.y << m.score;
 }
 
 inline sf::Packet& operator>>(sf::Packet& p, ClientPlayerDataMsg& m) {
-	return p >> m.position.x >> m.position.y;
+	return p >> m.position.x >> m.position.y >> m.score;
 }
 
 // --- PLAYER_DATA (server -> client) -------------------------
@@ -69,15 +70,16 @@ inline sf::Packet& operator>>(sf::Packet& p, ClientPlayerDataMsg& m) {
 struct ServerPlayerDataMsg {
 	std::string senderKey;
 	sf::Vector2f position{ 0.f, 0.f };
+	float score{ 0.f };
 };
 
 inline sf::Packet& operator<<(sf::Packet& p, const ServerPlayerDataMsg& m) {
 	return p << Settings::PacketTypes::PLAYER_DATA
-		<< m.senderKey << m.position.x << m.position.y;
+		<< m.senderKey << m.position.x << m.position.y << m.score;
 }
 
 inline sf::Packet& operator>>(sf::Packet& p, ServerPlayerDataMsg& m) {
-	return p >> m.senderKey >> m.position.x >> m.position.y;
+	return p >> m.senderKey >> m.position.x >> m.position.y << m.score;
 }
 
 // --- DISCONNECT ---------------------------------------------

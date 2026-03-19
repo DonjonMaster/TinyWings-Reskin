@@ -13,6 +13,7 @@ struct Connection {
 	unsigned short port{ 0 };
 	int playerNumber{ 0 };
 	sf::Vector2f position{ 0, 0 };
+	float score{ 0.f };
 };
 
 class Server
