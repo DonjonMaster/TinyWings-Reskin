@@ -2,6 +2,7 @@
 #include "../Engine/SpriteRendererComponent.h"
 #include "LevelGenerator.h"
 #include "Background.h"
+#include <ScoreRenderer.h>
 
 void PlayScene::Create()
 {
@@ -40,6 +41,13 @@ void PlayScene::Create()
     TestState* test = machine.CreateState<TestState>();
 
     machine.Init(test, ctx);
+
+    // On crée un objet vide qui servira de support à l'interface
+    auto hud = CreateGameObject({ 0.f, 0.f }, "HUD");
+    hud->AddComponent<ScoreRenderer>();
+
+    // On s'assure qu'il est dessiné au-dessus de tout le reste (Z-Order élevé)
+    hud->SetZOrder(1000);
 
     //// level generator
     GameObject* levelManager = CreateGameObject({ 0.f, 0.f }, "LevelManager");
