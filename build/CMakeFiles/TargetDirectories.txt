@@ -1,0 +1,4 @@
+/home/moi/Documents/Project/TinyWings-Reskin/build/CMakeFiles/Engine.dir
+/home/moi/Documents/Project/TinyWings-Reskin/build/CMakeFiles/Game.dir
+/home/moi/Documents/Project/TinyWings-Reskin/build/CMakeFiles/edit_cache.dir
+/home/moi/Documents/Project/TinyWings-Reskin/build/CMakeFiles/rebuild_cache.dir
